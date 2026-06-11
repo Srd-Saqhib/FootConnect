@@ -1,0 +1,137 @@
+* {
+  box-sizing: border-box;
+}
+
+.login-container input,
+.login-container select,
+.register-container input,
+.register-container select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background: #fff;
+}
+
+
+.login-container select,
+.register-container select {
+  color: #6a6868;
+  opacity: 1;
+}
+
+
+.login-container {
+  background: #fff;
+  padding: 30px;
+  width: 380px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  z-index: 100;
+}
+
+.login-container h2 {
+  margin-bottom: 20px;
+  color: #203a43;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px 10px 10px 5px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+
+.text {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.text a {
+  color: #00b8d4;
+  text-decoration: none;
+}
+
+
+
+/* Register */
+.register-container {
+  width: 320px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.register-container input {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+}
+
+.register-container button {
+  width: 100%;
+  padding: 30px;
+  margin-top: 10px;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+}
+
+
+.login-container button,
+.register-container button {
+  width: 100%;
+  padding: 12px;
+  background: #1F3897;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.login-container button:hover,
+.register-container button:hover {
+  background: #00b8d4;
+  transform: translateY(-1px);
+}
+
+
+.role-select {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0 20px;
+}
+
+.role-select button {
+  flex: 1;
+  padding: 10px;
+  background: #f1f5f9;
+  color: #1F3897;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-select button.active {
+  background: #1F3897;
+  color: white;
+  border-color: #1F3897;
+}
+
+.register-container input {
+  transition: all 0.2s ease;
+}
+

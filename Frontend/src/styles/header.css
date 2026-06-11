@@ -1,0 +1,27 @@
+.headstyle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px;
+  background-color: #1F3897;
+  color: aliceblue;
+}
+
+.btn-head1 {
+  padding: 8px 18px;
+  border-radius: 7px;
+  border: none;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.btn-head2 {
+  padding: 8px 18px;
+  margin-left: 12px ;
+  border-radius: 7px;
+  border: none;
+  background-color: #1F3897;
+  color: aliceblue;
+  border: 1px solid whitesmoke;
+  cursor: pointer;
+}

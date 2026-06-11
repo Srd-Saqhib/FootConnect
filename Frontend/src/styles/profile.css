@@ -1,0 +1,254 @@
+.profile-page {
+  padding: 3rem 6vw;
+  background-color: #f5f6f8;
+  min-height: 100vh;
+}
+
+.profile-header-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.profile-left {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background-color: #1F3897;
+  color: white;
+  font-size: 28px;
+  font-weight: 700;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-name {
+  margin: 0;
+  font-size: 24px;
+}
+
+.profile-sub {
+  margin: 2px 0;
+  color: #6b7280;
+}
+
+.profile-location {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 30px;
+  margin-top: 12px;
+}
+
+.profile-stats div {
+  text-align: center;
+}
+
+.profile-stats strong {
+  font-size: 18px;
+  display: block;
+}
+
+.profile-stats span {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.profile-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.profile-role {
+  font-weight: 500;
+}
+
+.dot {
+  font-size: 12px;
+}
+
+.current-club {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.club-label {
+  font-size: 12px;
+  color: #6b7280;
+  background-color: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.club-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F3897;
+}
+
+
+
+.skills-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.skills-card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.skills-sub {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+
+.skill-row {
+  margin-bottom: 18px;
+}
+
+.skill-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.skill-score {
+  color: #1F3897;
+  font-weight: 600;
+}
+
+.skill-bar {
+  width: 100%;
+  height: 10px;
+  background-color: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.skill-fill {
+  height: 100%;
+  background-color: #1F3897;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.profile-empty{
+  text-align: center;
+  padding: 30px;
+  font-size: larger;
+}
+
+.primary-btn, .secondary-btn{
+  padding: 10px;
+  background: #f1f5f9;
+  color: #1F3897;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.primary-btn:hover, .secondary-btn:hover{
+  color:#f1f5f9;
+  background-color: #1F3897;
+}
+
+.empty-actions{
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.profile-empty h2{
+  color: #1F3897;
+}
+
+.profile-empty p{
+ color: #2b2d30;
+ padding: 10px;
+}
+
+.logout-btn {
+  margin: 30px 10px 0px 0px;
+  padding: 8px 18px;
+  margin-left: 12px ;
+  border-radius: 7px;
+  font-size: 1rem;
+  border: none;
+  background-color: #1F3897;
+  color: aliceblue;
+  border: 1px solid whitesmoke;
+  cursor: pointer;
+}
+
+.logout-btn:hover{
+  transform: scale(1.03);
+}
+
+.cardSec{
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.cardSec button{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: white;
+  color: #1F3897;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  transition: 0.2s ease;
+}
+
+.cardSec button:hover{
+  background-color: #1F3897;
+  color: white;
+}
+
+.player-row {
+  padding: 14px 18px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

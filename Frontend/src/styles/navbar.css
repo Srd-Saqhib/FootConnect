@@ -1,0 +1,17 @@
+.navstyle{
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  gap: 90px;
+  list-style: none;
+}
+
+.navstyle li:hover{
+    transform: scale(1.1);
+}
+
+.navbox{
+  
+  padding: 5px;
+  margin-bottom: 0;
+}
