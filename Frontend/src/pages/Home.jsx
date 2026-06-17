@@ -3,18 +3,31 @@ import axios from "axios";
 import Card from "../components/Cd";
 import "../styles/Home.css";
 import FriendlyCard from "../components/FriendlyCard";
+import TournamentCard from "../components/TournamentCard";
 
-function Home() {
+function Home(props) {
   const [friendlyMatches, setFriendlyMatches] = useState([]);
+  const [tournamentMatches, setTournamentMatches] = useState([]);
 
   useEffect(() => {
     fetchFriendlies();
+    fetchTournament();
   }, []);
 
   async function fetchFriendlies() {
     try {
       const res = await axios.get("/api/friendly");
       setFriendlyMatches(res.data.matches);
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function fetchTournament() {
+    try {
+      const res = await axios.get("/api/tournament");
+      setTournamentMatches(res.data.tournaments);
     }
     catch (error) {
       console.log(error);
@@ -28,6 +41,25 @@ function Home() {
         <p className="home-subtitle">
           Connect. Play. Grow. Join India's Premier Football Community ⚽
         </p>
+      </div>
+
+      <h2 className="section-title">
+        Upcoming Tournaments 🏆
+      </h2>
+
+      <div className="friendlies-grid">
+        {tournamentMatches.length === 0 ? (
+          <p>No tournaments available.</p>
+        ) : (
+          tournamentMatches.map((tournament) => (
+            <TournamentCard
+              key={tournament.id}
+              tournament={tournament}
+              openTournament={props.openTournament}
+              clubId={props.currentUser.user_club_id}
+            />
+          ))
+        )}
       </div>
 
       <h2 className="section-title">
@@ -64,7 +96,7 @@ function Home() {
           </div>
         </div>
       </div>
-
+      
     </div>
   );
 }

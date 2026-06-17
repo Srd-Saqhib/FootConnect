@@ -21,6 +21,14 @@ function Clubs(props) {
   const [description, setDescription] = useState("");
   const [followedClubs, setFollowedClubs] = useState([]);
   const [opponentClub, setOpponentClub] = useState("");
+  //tournment states
+  const [tournamentTitle, setTournamentTitle] = useState("");
+  const [tournamentLocation, setTournamentLocation] = useState("");
+  const [registrationDeadline, setRegistrationDeadline] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [maxTeams, setMaxTeams] = useState("");
+  const [tournamentDescription, setTournamentDescription] = useState("");
 
   useEffect(() => {
     if (props.currentUser) {
@@ -80,7 +88,11 @@ function Clubs(props) {
       setJoinResult(result.data);
       alert("Join request sent");
     } catch (err) {
-      alert("Request failed");
+      console.log(err.response);
+
+      alert(
+        err.response?.data?.message || "Request failed"
+      );
     }
   }
 
@@ -173,6 +185,34 @@ function Clubs(props) {
     catch (error) {
       console.log(error.response?.data);
       alert(error.response?.data?.message);
+    }
+  }
+
+  async function createTournament() {
+    try {
+      await axios.post("/api/tournament/create", {
+        hostClubId: props.currentUser.user_club_id,
+        title: tournamentTitle,
+        description: tournamentDescription,
+        location: tournamentLocation,
+        registrationDeadline,
+        startDate,
+        endDate,
+        maxTeams
+      });
+
+      alert("Tournament created!");
+      setModalType(null);
+      setTournamentTitle("");
+      setTournamentLocation("");
+      setTournamentDescription("");
+      setRegistrationDeadline("");
+      setStartDate("");
+      setEndDate("");
+      setMaxTeams("");
+    } catch (error) {
+      console.log(error);
+      alert(error.response?.data?.message || "Failed to create tournament");
     }
   }
 
@@ -279,7 +319,7 @@ function Clubs(props) {
 
       {props.currentUser?.role === "club" && (
         <div className="club-actions">
-          <div className="action-card friendly-card">
+          <div className="action-card club-action-card">
             <h3>⚽ Create Friendly</h3>
             <p>Challenge another club to a friendly match.</p>
             {followedClubs.length > 0 ? (
@@ -291,7 +331,7 @@ function Clubs(props) {
             )}
           </div>
 
-          <div className="action-card tournament-card">
+          <div className="action-card club-action-card">
             <h3>🏆 Host Tournament</h3>
             <p>Organize a tournament and invite clubs.</p>
             <button onClick={() => setModalType("tournament")}>
@@ -358,23 +398,82 @@ function Clubs(props) {
       )}
 
       {modalType === "tournament" && (
-        <div className="modal-overlay" onClick={() => setModalType(null)}>
-          <div className="friendly-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Host Tournament</h2>
-
-            <input placeholder="Tournament Name" />
-
-            <input placeholder="Location" />
-
-            <input type="date" />
+        <div
+          className="modal-overlay"
+          onClick={() => setModalType(null)}
+        >
+          <div
+            className="friendly-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2>🏆 Host Tournament</h2>
 
             <input
-              type="number"
-              placeholder="Maximum Teams"
+              value={tournamentTitle}
+              onChange={(e) => setTournamentTitle(e.target.value)}
+              placeholder="Tournament Name"
             />
+
+            <input
+              value={tournamentLocation}
+              onChange={(e) => setTournamentLocation(e.target.value)}
+              placeholder="Location"
+            />
+
+            <div className="form-section">
+              <span className="section-label">Registration Deadline</span>
+
+              <input
+                type="date"
+                value={registrationDeadline}
+                onChange={(e) => setRegistrationDeadline(e.target.value)}
+              />
+            </div>
+
+            <div className="form-row">
+
+              <div className="form-section">
+                <span className="section-label">Start Date</span>
+
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+
+              <div className="form-section">
+                <span className="section-label">End Date</span>
+
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+
+            </div>
+
+            <div className="form-section">
+              <span className="section-label">Tournament Size</span>
+
+              <select
+                value={maxTeams}
+                onChange={(e) => setMaxTeams(Number(e.target.value))}
+              >
+                <option value="">Choose Size</option>
+                <option value={4}>4 Teams</option>
+                <option value={8}>8 Teams</option>
+                <option value={16}>16 Teams</option>
+                <option value={32}>32 Teams</option>
+              </select>
+            </div>
 
             <textarea
               rows={4}
+              maxLength={200}
+              value={tournamentDescription}
+              onChange={(e) => setTournamentDescription(e.target.value)}
               placeholder="Tournament Description"
             />
 
@@ -383,8 +482,11 @@ function Clubs(props) {
                 Cancel
               </button>
 
-              <button>Host Tournament</button>
+              <button onClick={createTournament}>
+                Host Tournament
+              </button>
             </div>
+
           </div>
         </div>
       )}

@@ -38,28 +38,6 @@ function Community(props) {
     getPosts();
   }, []);
 
-
-  // const posts = [
-  //   {
-  //     id: 1,
-  //     user: "Rahul Sharma",
-  //     content: "Looking for players for a weekend match in Udupi ⚽",
-  //     time: "2 hours ago",
-  //   },
-  //   {
-  //     id: 2,
-  //     user: "Ankit Verma",
-  //     content: "Great game today! Proud of the team effort 💪",
-  //     time: "5 hours ago",
-  //   },
-  //   {
-  //     id: 3,
-  //     user: "Saqhib",
-  //     content: "Anyone interested in joining a striker training session?",
-  //     time: "1 day ago",
-  //   },
-  // ];
-
   async function getPosts() {
     try {
       const res = await axios.get("/api/posts", {

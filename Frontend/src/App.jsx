@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Header from "./components/Header";
 import Navbar from "./components/Navbar";
 import Login from "./components/Login";
@@ -9,7 +10,8 @@ import News from "./pages/News";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import "./App.css";
-
+import TournamentDetails from "./pages/TournamentDetails";
+import Toast from "./components/Toast";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -17,6 +19,11 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [toast, setToast] = useState({
+    message: "",
+    type: ""
+  });
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -26,6 +33,15 @@ function App() {
       setIsLoggedIn(true);
     }
   }, []);
+
+  async function refreshTournament(id) {
+    try {
+      const res = await axios.get(`/api/tournament/${id}`);
+      setSelectedTournament(res.data.tournament);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div>
@@ -74,12 +90,37 @@ function App() {
         setCurrentPage={setCurrentPage}
       />
 
-      {currentPage === "home" && <Home />}
+      {currentPage === "home" &&
+        (selectedTournament ? (
+          <TournamentDetails
+            tournament={selectedTournament}
+            onBack={() => setSelectedTournament(null)}
+            clubId={currentUser?.user_club_id}
+            setToast={setToast}
+            refreshTournament={refreshTournament}
+          />
+        ) : (
+          <Home
+            currentUser={currentUser}
+            openTournament={setSelectedTournament}
+          />
+        ))
+      }
       {currentPage === "clubs" && <Clubs currentUser={currentUser} />}
       {currentPage === "news" && <News />}
       {currentPage === "community" && <Community currentUser={currentUser} openLogin={() => setShowLogin(true)} />}
-      {currentPage === "profile" && <Profile user={currentUser} logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }} ssr={() => setShowRegister(true)} ssl={() => setShowLogin(true)} />}
+      {currentPage === "profile" &&
+        <Profile user={currentUser}
+          logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }}
+          ssr={() => setShowRegister(true)}
+          ssl={() => setShowLogin(true)} 
+          setToast={setToast}/>
+      }
 
+      <Toast
+        message={toast.message}
+        type={toast.type}
+      />
     </div>
   );
 }

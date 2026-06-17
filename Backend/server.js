@@ -21,6 +21,94 @@ const db = new Pool({
 app.use(cors());
 app.use(express.json());
 
+const BRACKETS = {
+
+  4: {
+    1: { nextMatch: 3, position: 1 },
+    2: { nextMatch: 3, position: 2 }
+  },
+
+  8: {
+    1: { nextMatch: 5, position: 1 },
+    2: { nextMatch: 5, position: 2 },
+    3: { nextMatch: 6, position: 1 },
+    4: { nextMatch: 6, position: 2 },
+    5: { nextMatch: 7, position: 1 },
+    6: { nextMatch: 7, position: 2 }
+  },
+
+  16: {
+    1: { nextMatch: 9, position: 1 },
+    2: { nextMatch: 9, position: 2 },
+
+    3: { nextMatch: 10, position: 1 },
+    4: { nextMatch: 10, position: 2 },
+
+    5: { nextMatch: 11, position: 1 },
+    6: { nextMatch: 11, position: 2 },
+
+    7: { nextMatch: 12, position: 1 },
+    8: { nextMatch: 12, position: 2 },
+
+    9: { nextMatch: 13, position: 1 },
+    10: { nextMatch: 13, position: 2 },
+
+    11: { nextMatch: 14, position: 1 },
+    12: { nextMatch: 14, position: 2 },
+
+    13: { nextMatch: 15, position: 1 },
+    14: { nextMatch: 15, position: 2 }
+  },
+
+  32: {
+    1: { nextMatch: 17, position: 1 },
+    2: { nextMatch: 17, position: 2 },
+
+    3: { nextMatch: 18, position: 1 },
+    4: { nextMatch: 18, position: 2 },
+
+    5: { nextMatch: 19, position: 1 },
+    6: { nextMatch: 19, position: 2 },
+
+    7: { nextMatch: 20, position: 1 },
+    8: { nextMatch: 20, position: 2 },
+
+    9: { nextMatch: 21, position: 1 },
+    10: { nextMatch: 21, position: 2 },
+
+    11: { nextMatch: 22, position: 1 },
+    12: { nextMatch: 22, position: 2 },
+
+    13: { nextMatch: 23, position: 1 },
+    14: { nextMatch: 23, position: 2 },
+
+    15: { nextMatch: 24, position: 1 },
+    16: { nextMatch: 24, position: 2 },
+
+    17: { nextMatch: 25, position: 1 },
+    18: { nextMatch: 25, position: 2 },
+
+    19: { nextMatch: 26, position: 1 },
+    20: { nextMatch: 26, position: 2 },
+
+    21: { nextMatch: 27, position: 1 },
+    22: { nextMatch: 27, position: 2 },
+
+    23: { nextMatch: 28, position: 1 },
+    24: { nextMatch: 28, position: 2 },
+
+    25: { nextMatch: 29, position: 1 },
+    26: { nextMatch: 29, position: 2 },
+
+    27: { nextMatch: 30, position: 1 },
+    28: { nextMatch: 30, position: 2 },
+
+    29: { nextMatch: 31, position: 1 },
+    30: { nextMatch: 31, position: 2 }
+  }
+
+};
+
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
@@ -389,6 +477,10 @@ app.get("/api/clubs", async (req, res) => {
 app.post("/api/reqclub/:club_id/:user_id", async (req, res) => {
   try {
     const { club_id, user_id } = req.params;
+    console.log({
+      club_id,
+      user_id
+    });
 
     const roleResult = await db.query(
       "SELECT role FROM users WHERE id = $1",
@@ -412,13 +504,36 @@ app.post("/api/reqclub/:club_id/:user_id", async (req, res) => {
       [user_id]
     );
 
-    const existingReq = await db.query(
-      `SELECT id FROM club_join_requests 
-   WHERE player_id = $1 
-   AND club_id = $2 
-   AND status IN ('pending','accepted')`,
-      [user_id, club_id]
+    const playerResult = await db.query(
+      `SELECT id
+   FROM players
+   WHERE user_id = $1`,
+      [user_id]
     );
+
+    if (playerResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Player profile not found."
+      });
+    }
+
+    const playerId = playerResult.rows[0].id;
+
+    console.log("User ID:", user_id);
+    console.log("User:", userResult.rows[0]);
+    console.log("Player ID:", playerId);
+
+    const existingReq = await db.query(
+      `SELECT id
+   FROM club_join_requests
+   WHERE player_id = $1
+   AND club_id = $2
+   AND status IN ('pending','accepted')`,
+      [playerId, club_id]
+    );
+
+    console.log(existingReq.rows);
 
     if (existingReq.rows.length > 0) {
       return res.status(400).json({
@@ -432,6 +547,8 @@ app.post("/api/reqclub/:club_id/:user_id", async (req, res) => {
       [user_id]
     );
 
+    console.log(playerClub.rows);
+
     if (playerClub.rows.length > 0 && playerClub.rows[0].club_id !== null) {
       return res.status(400).json({
         success: false,
@@ -440,8 +557,11 @@ app.post("/api/reqclub/:club_id/:user_id", async (req, res) => {
     }
 
     const joinReqResult = await db.query(
-      "INSERT INTO club_join_requests (player_id, club_id, status) VALUES ($1, $2, 'pending') RETURNING id",
-      [user_id, club_id]
+      `INSERT INTO club_join_requests
+        (player_id, club_id, status)
+        VALUES ($1, $2, 'pending')
+        RETURNING id`,
+      [playerId, club_id]
     );
 
     const requestId = joinReqResult.rows[0].id;
@@ -509,6 +629,17 @@ app.post("/api/club/request/:requestId", async (req, res) => {
 
     const { player_id, club_id } = reqResult.rows[0];
 
+    const playerUser = await db.query(
+      `
+      SELECT user_id
+      FROM players
+      WHERE id=$1
+      `,
+      [player_id]
+    );
+
+    const playerUserId = playerUser.rows[0].user_id;
+
     const clubResult = await db.query(
       "SELECT admin_user_id FROM clubs WHERE id = $1",
       [club_id]
@@ -520,13 +651,25 @@ app.post("/api/club/request/:requestId", async (req, res) => {
     }
 
     if (action == "accept") {
-
+      console.log("Accepting request");
+      console.log({
+        player_id,
+        club_id
+      });
       await db.query("UPDATE club_join_requests SET status=$1 WHERE id=$2", ["accepted", requestId]);
-      await db.query("UPDATE players SET club_id=$1 WHERE user_id=$2", [club_id, player_id]);
+      const updateResult = await db.query(
+        `UPDATE players
+          SET club_id = $1
+          WHERE id = $2
+          RETURNING *`,
+        [club_id, player_id]
+      );
+
+      console.log(updateResult.rows);
       await db.query(
         `INSERT INTO notifications (user_id, actor_user_id, message, type)
-   VALUES ($1,$2,$3,$4)`,
-        [player_id, adminId, "Your request was accepted", "club_join_accepted"]
+        VALUES ($1,$2,$3,$4)`,
+        [playerUserId, adminId, "Your request was accepted", "club_join_accepted"]
       );
       await db.query(
         "DELETE FROM notifications WHERE request_id = $1",
@@ -543,7 +686,7 @@ app.post("/api/club/request/:requestId", async (req, res) => {
       await db.query(
         `INSERT INTO notifications (user_id, actor_user_id, message, type)
    VALUES ($1,$2,$3,$4)`,
-        [player_id, adminId, "Your request was declined", "club_join_declined"]
+        [playerUserId, adminId, "Your request was declined", "club_join_declined"]
       );
       await db.query(
         "DELETE FROM notifications WHERE request_id = $1",
@@ -1039,8 +1182,8 @@ app.post("/api/friendly/request/:id", async (req, res) => {
     const { action } = req.body;
 
     console.log("FRIENDLY ACTION");
-console.log("ID:", id);
-console.log("ACTION:", action);
+    console.log("ID:", id);
+    console.log("ACTION:", action);
     if (action === "accept") {
       await db.query(
         `UPDATE friendly_matches
@@ -1099,6 +1242,680 @@ app.get("/api/friendly", async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+  }
+});
+
+// Create Tournament
+app.post("/api/tournament/create", async (req, res) => {
+  try {
+    const {
+      hostClubId,
+      title,
+      description,
+      location,
+      registrationDeadline,
+      startDate,
+      endDate,
+      maxTeams
+    } = req.body;
+
+    // Validation
+    if (
+      !hostClubId ||
+      !title ||
+      !location ||
+      !registrationDeadline ||
+      !startDate ||
+      !endDate ||
+      !maxTeams
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please fill all required fields"
+      });
+    }
+
+    if (new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "End date cannot be before start date"
+      });
+    }
+
+    if (new Date(registrationDeadline) > new Date(startDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Registration deadline must be before tournament start date"
+      });
+    }
+
+    if (maxTeams < 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Tournament must allow at least 2 teams"
+      });
+    }
+
+    const tournament = await db.query(
+      `INSERT INTO tournaments
+      (
+        host_club_id,
+        title,
+        description,
+        location,
+        registration_deadline,
+        start_date,
+        end_date,
+        max_teams
+      )
+      VALUES
+      ($1,$2,$3,$4,$5,$6,$7,$8)
+      RETURNING *`,
+      [
+        hostClubId,
+        title,
+        description,
+        location,
+        registrationDeadline,
+        startDate,
+        endDate,
+        maxTeams
+      ]
+    );
+
+    res.json({
+      success: true,
+      tournament: tournament.rows[0]
+    });
+
+  } catch (error) {
+    console.log("TOURNAMENT CREATE ERROR:");
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create tournament"
+    });
+  }
+});
+
+// Fetch tournaments
+app.get("/api/tournament", async (req, res) => {
+  try {
+    const result = await db.query(`
+      SELECT
+        t.*,
+        host.club_name AS host_club,
+        winner.club_name AS champion_name
+      FROM tournaments t
+      JOIN clubs host
+      ON t.host_club_id = host.id
+      LEFT JOIN clubs winner
+      ON t.winner_club_id = winner.id
+      ORDER BY t.start_date
+    `);
+
+    res.json({
+      success: true,
+      tournaments: result.rows
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch tournaments"
+    });
+  }
+});
+
+//register clubs for the tournament
+app.post("/api/tournament/register", async (req, res) => {
+  try {
+    const { clubId, tournamentId } = req.body;
+
+    const existing = await db.query(
+      `SELECT *
+       FROM tournament_registrations
+       WHERE tournament_id = $1
+       AND club_id = $2`,
+      [tournamentId, clubId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({
+        message: "Club already registered"
+      });
+    }
+
+    await db.query(
+      `INSERT INTO tournament_registrations
+       (tournament_id, club_id)
+       VALUES ($1, $2)`,
+      [tournamentId, clubId]
+    );
+
+    res.json({
+      success: true,
+      message: "Tournament registration successful"
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+
+//get registered club for a tournament
+app.get("/api/tournament/registeredClub", async (req, res) => {
+  try {
+    const { tournamentId } = req.query;
+
+    const result = await db.query(
+      `SELECT
+        c.id,
+        c.club_name,
+        c.district,
+        c.state
+      FROM tournament_registrations tr
+      JOIN clubs c
+          ON tr.club_id = c.id
+      WHERE tr.tournament_id = $1
+      ORDER BY c.club_name`,
+      [tournamentId]
+    );
+
+    res.json({
+      clubs: result.rows
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+// Generate tournament fixtures
+app.post("/api/tournament/generateFixtures", async (req, res) => {
+  try {
+    const { tournamentId } = req.body;
+
+    const clubs = await db.query(
+      `SELECT club_id
+       FROM tournament_registrations
+       WHERE tournament_id = $1`,
+      [tournamentId]
+    );
+
+    const teamIds = clubs.rows.map(team => team.club_id);
+
+    if (teamIds.length < 4) {
+      return res.status(400).json({
+        message: "At least 4 teams are required."
+      });
+    }
+
+    if (teamIds.length % 2 !== 0) {
+      return res.status(400).json({
+        message: "Number of teams must be even."
+      });
+    }
+
+    const existing = await db.query(
+      `SELECT id
+       FROM tournament_fixtures
+       WHERE tournament_id = $1`,
+      [tournamentId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({
+        message: "Fixtures have already been generated."
+      });
+    }
+
+    // Shuffle teams
+    for (let i = teamIds.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      [teamIds[i], teamIds[j]] =
+        [teamIds[j], teamIds[i]];
+    }
+
+    await db.query("BEGIN");
+
+    try {
+
+      let firstRound = "";
+      let nextRounds = [];
+
+      switch (teamIds.length) {
+
+        case 4:
+          firstRound = "Semi Final";
+          nextRounds = [
+            { round: "Final", matches: 1 }
+          ];
+          break;
+
+        case 8:
+          firstRound = "Quarter Final";
+          nextRounds = [
+            { round: "Semi Final", matches: 2 },
+            { round: "Final", matches: 1 }
+          ];
+          break;
+
+        case 16:
+          firstRound = "Round of 16";
+          nextRounds = [
+            { round: "Quarter Final", matches: 4 },
+            { round: "Semi Final", matches: 2 },
+            { round: "Final", matches: 1 }
+          ];
+          break;
+
+        case 32:
+          firstRound = "Round of 32";
+          nextRounds = [
+            { round: "Round of 16", matches: 8 },
+            { round: "Quarter Final", matches: 4 },
+            { round: "Semi Final", matches: 2 },
+            { round: "Final", matches: 1 }
+          ];
+          break;
+      }
+
+      let matchNumber = 1;
+
+      // Insert first round
+      for (let i = 0; i < teamIds.length; i += 2) {
+
+        await db.query(
+          `INSERT INTO tournament_fixtures
+          (
+            tournament_id,
+            round,
+            match_number,
+            team1_id,
+            team2_id,
+            status
+          )
+          VALUES($1,$2,$3,$4,$5,$6)`,
+          [
+            tournamentId,
+            firstRound,
+            matchNumber++,
+            teamIds[i],
+            teamIds[i + 1],
+            "Upcoming"
+          ]
+        );
+
+      }
+
+      // Insert remaining empty rounds
+      for (const round of nextRounds) {
+
+        for (let i = 0; i < round.matches; i++) {
+
+          await db.query(
+            `INSERT INTO tournament_fixtures
+            (
+              tournament_id,
+              round,
+              match_number,
+              team1_id,
+              team2_id,
+              status
+            )
+            VALUES($1,$2,$3,NULL,NULL,$4)`,
+            [
+              tournamentId,
+              round.round,
+              matchNumber++,
+              "Upcoming"
+            ]
+          );
+
+        }
+
+      }
+
+      await db.query("COMMIT");
+
+      res.status(201).json({
+        message: "Fixtures generated successfully."
+      });
+
+    } catch (err) {
+
+      await db.query("ROLLBACK");
+      throw err;
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+
+  }
+});
+
+// Fetch match fixtures
+app.get("/api/tournament/fetchFixtures", async (req, res) => {
+  try {
+    const { tournamentId } = req.query;
+
+    const fixtures = await db.query(
+      `SELECT
+      tf.id,
+      tf.round,
+      tf.match_number,
+      tf.status,
+      tf.team1_id,
+      c1.club_name AS team1_name,
+      tf.team2_id,
+      c2.club_name AS team2_name,
+      tf.team1_score,
+      tf.team2_score,
+      tf.winner_id
+    FROM tournament_fixtures tf
+    LEFT JOIN clubs c1
+        ON tf.team1_id = c1.id
+    LEFT JOIN clubs c2
+        ON tf.team2_id = c2.id
+    WHERE tf.tournament_id = $1
+    ORDER BY tf.match_number`,
+      [tournamentId]
+    );
+
+    res.json({
+      fixtures: fixtures.rows
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+//match result update
+app.post("/api/tournament/matchResult", async (req, res) => {
+  try {
+    const { match, tournamentId, team1Score, team2Score } = req.body;
+
+    let winnerId;
+
+    if (Number(team1Score) > Number(team2Score)) {
+      winnerId = match.team1_id;
+    }
+    else if (Number(team2Score) > Number(team1Score)) {
+      winnerId = match.team2_id;
+    }
+    else {
+      return res.status(400).json({
+        message: "Draws are not allowed."
+      });
+    }
+
+    await db.query(
+      `UPDATE tournament_fixtures
+       SET
+        team1_score = $1,
+        team2_score = $2,
+        winner_id = $3,
+        status = $4
+       WHERE id = $5`,
+      [
+        team1Score,
+        team2Score,
+        winnerId,
+        "Completed",
+        match.id
+      ]
+    );
+
+    const tournament = await db.query(
+      `SELECT max_teams
+   FROM tournaments
+   WHERE id = $1`,
+      [tournamentId]
+    );
+
+    const maxTeams = tournament.rows[0].max_teams;
+
+    const bracket = BRACKETS[maxTeams];
+
+    if (bracket) {
+
+      const next = bracket[match.match_number];
+
+      if (next) {
+        const column =
+          next.position === 1
+            ? "team1_id"
+            : "team2_id";
+
+        await db.query(
+          `UPDATE tournament_fixtures
+            SET ${column} = $1
+            WHERE tournament_id = $2
+            AND match_number = $3`,
+          [
+            winnerId,
+            tournamentId,
+            next.nextMatch
+          ]
+        );
+      }
+    }
+
+    if (match.round === "Final") {
+      await db.query(
+        `UPDATE tournaments
+         SET winner_club_id = $1
+         WHERE id = $2`,
+        [winnerId, tournamentId]
+      );
+    }
+
+
+    res.status(200).json({
+      message: "Result updated successfully."
+    });
+  }
+  catch (error) {
+    console.log(error);
+  }
+});
+
+//fetch tournament with id 
+app.get("/api/tournament/:id", async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const result = await db.query(
+      `
+      SELECT
+        t.*,
+        host.club_name AS host_club,
+        winner.club_name AS champion_name
+      FROM tournaments t
+      JOIN clubs host
+        ON t.host_club_id = host.id
+      LEFT JOIN clubs winner
+        ON t.winner_club_id = winner.id
+      WHERE t.id = $1
+      `,
+      [id]
+    );
+
+    res.json({
+      tournament: result.rows[0]
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+// Fetch profile stats
+app.get("/api/profile/stats", async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    // Get user role
+    const user = await db.query(
+      `SELECT role
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(404).json({
+        message: "User not found."
+      });
+    }
+
+    // ================= CLUB =================
+    if (user.rows[0].role === "club") {
+
+      const stats = await db.query(
+        `SELECT
+            c.id,
+            c.club_name,
+            c.founded_year,
+            c.description,
+            COUNT(DISTINCT p.id) AS players,
+            COUNT(DISTINCT tf.id) AS matches,
+            COUNT(DISTINCT t.id) AS trophies
+        FROM clubs c
+
+        LEFT JOIN players p
+          ON p.club_id = c.id
+
+        LEFT JOIN tournament_fixtures tf
+          ON tf.team1_id = c.id
+          OR tf.team2_id = c.id
+
+        LEFT JOIN tournaments t
+          ON t.winner_club_id = c.id
+
+        WHERE c.user_id = $1
+
+        GROUP BY
+          c.id,
+          c.club_name,
+          c.founded_year,
+          c.description`,
+        [userId]
+      );
+
+      return res.json({
+        role: "club",
+        stats: stats.rows[0]
+      });
+    }
+
+    // ================= PLAYER =================
+    const stats = await db.query(
+      `SELECT
+          p.position,
+          p.bio,
+          p.created_at,
+          c.club_name
+      FROM players p
+
+      LEFT JOIN clubs c
+        ON p.club_id = c.id
+
+      WHERE p.user_id = $1`,
+      [userId]
+    );
+
+    return res.json({
+      role: "player",
+      stats: stats.rows[0]
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+//update club description
+app.put("/api/club/description", async (req, res) => {
+  try {
+
+    const { userId, description } = req.body;
+
+    await db.query(
+      `UPDATE clubs
+             SET description = $1
+             WHERE user_id = $2`,
+      [description, userId]
+    );
+
+    res.json({
+      message: "Description updated successfully."
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+//update bio for players
+app.put("/api/player/bio", async (req, res) => {
+  try {
+
+    const { userId, bio } = req.body;
+
+    await db.query(
+      `UPDATE players
+       SET bio = $1
+       WHERE user_id = $2`,
+      [bio, userId]
+    );
+
+    res.json({
+      message: "Bio updated successfully."
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
   }
 });
 

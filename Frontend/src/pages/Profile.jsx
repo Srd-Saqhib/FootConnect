@@ -2,11 +2,18 @@ import React, { useEffect, useState } from "react";
 import "../styles/profile.css";
 import axios from "axios";
 import PlaceIcon from '@mui/icons-material/Place';
+import EventIcon from "@mui/icons-material/Event";
+import DescriptionIcon from "@mui/icons-material/Description";
 
 
-function Profile({ user, ssr, ssl, logout }) {
+function Profile({ user, ssr, ssl, logout, setToast }) {
   const [clubCard, setClubCard] = useState("status");
   const [fetchPlayer, setFetchPlayer] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [descriptionModule, setDescriptionModule] = useState(false);
+  const [description, setDescription] = useState("");
+  const [bioModule, setBioModule] = useState(false);
+  const [bio, setBio] = useState("");
 
   const isPlayer = user?.role === "player";
   const isClub = user?.role === "club";
@@ -24,9 +31,13 @@ function Profile({ user, ssr, ssl, logout }) {
     if (user && isClub) {
       getPlayer();
     }
+
+    if (user) {
+      fetchProfileStats();
+    }
   }, [user]);
 
-    if (!user) {
+  if (!user) {
     return (
       <div className="profile-empty profile-page ">
         <h2>Step Onto the Pitch ⚽</h2>
@@ -44,14 +55,70 @@ function Profile({ user, ssr, ssl, logout }) {
     );
   }
 
+  async function fetchProfileStats() {
+    try {
+      const res = await axios.get("/api/profile/stats", {
+        params: {
+          userId: user.id
+        }
+      });
+      console.log(res.data);
+      setStats(res.data.stats);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-  const skills = [
-    { name: "Dribbling", value: 8.5 },
-    { name: "Passing", value: 7.8 },
-    { name: "Shooting", value: 7.2 },
-    { name: "Defense", value: 6.9 },
-    { name: "Speed", value: 8.0 },
-  ];
+  async function updateDescription() {
+    try {
+
+      await axios.put("/api/club/description", {
+        userId: user.id,
+        description
+      });
+
+      await fetchProfileStats();
+      setDescriptionModule(false);
+      setToast({
+        message: "Description updated successfully",
+        type: "success"
+      });
+      setTimeout(() => {
+        setToast({ message: "", type: "" });
+      }, 3000);
+      return;
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function updateBio() {
+    try {
+
+      await axios.put("/api/player/bio", {
+        userId: user.id,
+        bio
+      });
+
+      await fetchProfileStats();
+
+      setBio(bio);
+      setBioModule(false);
+
+      setToast({
+        message: "Bio updated successfully",
+        type: "success"
+      });
+
+      setTimeout(() => {
+        setToast({ message: "", type: "" });
+      }, 3000);
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <div className="profile-page">
@@ -83,35 +150,48 @@ function Profile({ user, ssr, ssl, logout }) {
                   <span className="club-label">
                     {isPlayer ? "Current Club" : "Club Type"}
                   </span>
+
                   <span className="club-name">
-                    {isPlayer ? (user.user_club_name ? user.user_club_name : "no club") : "Professional Football Club"}
+                    {stats?.club_name || "No Club Assigned"}
                   </span>
                 </div>
 
-                <div className="profile-stats">
+                <div className={isPlayer ? "player-stats" : "profile-stats"}>
                   {isPlayer ? (
                     <>
                       <div>
-                        <strong>12</strong>
-                        <span>Matches</span>
+                        <strong>{stats?.position || "-"}</strong>
+                        <span>Position</span>
                       </div>
+
                       <div>
-                        <strong>1</strong>
-                        <span>Clubs</span>
+                        <strong>
+                          {stats?.created_at
+                            ? new Date(stats.created_at).getFullYear()
+                            : "-"}
+                        </strong>
+                        <span>Member Since</span>
+                      </div>
+
+                      <div>
+                        <strong>{user.state}</strong>
+                        <span>Location</span>
                       </div>
                     </>
                   ) : (
                     <>
                       <div>
-                        <strong>18</strong>
+                        <strong>{stats?.players ?? 0}</strong>
                         <span>Players</span>
                       </div>
+
                       <div>
-                        <strong>24</strong>
+                        <strong>{stats?.matches ?? 0}</strong>
                         <span>Matches</span>
                       </div>
+
                       <div>
-                        <strong>7</strong>
+                        <strong>{stats?.trophies ?? 0}</strong>
                         <span>Trophies</span>
                       </div>
                     </>
@@ -125,29 +205,39 @@ function Profile({ user, ssr, ssl, logout }) {
         </div>
       </div>
 
-      {/* ===== Skills Section ===== */}
       {isPlayer && (
-        <div className="skills-card">
-          <h3>Skills & Ratings</h3>
-          <p className="skills-sub">
-            Ratings provided by match referees and coaches
+        <div className="about-card">
+
+          <div className="description-header">
+
+            <h3>About</h3>
+
+            <button
+              className="edit-description-btn"
+              onClick={() => {
+                setBio(stats?.bio || "");
+                setBioModule(true);
+              }}
+            >
+              Edit
+            </button>
+
+          </div>
+
+          <p className="about-sub">
+            Player biography
           </p>
 
-          {skills.map((skill, index) => (
-            <div className="skill-row" key={index}>
-              <div className="skill-top">
-                <span>{skill.name}</span>
-                <span className="skill-score">{skill.value}/10</span>
-              </div>
+          <div className="about-content">
+            {stats?.bio ? (
+              <p>{stats.bio}</p>
+            ) : (
+              <p className="empty-about">
+                No bio has been added yet.
+              </p>
+            )}
+          </div>
 
-              <div className="skill-bar">
-                <div
-                  className="skill-fill"
-                  style={{ width: `${skill.value * 10}%` }}
-                />
-              </div>
-            </div>
-          ))}
         </div>
       )}
 
@@ -155,45 +245,88 @@ function Profile({ user, ssr, ssl, logout }) {
       {isClub && (
         <>
           <div className="cardSec">
-            <button onClick={() => { setClubCard("status") }}>Status</button>
-            <button onClick={() => { setClubCard("players") }}>Players</button>
+            <button
+              className={clubCard === "status" ? "active-card" : ""}
+              onClick={() => setClubCard("status")}
+            >
+              Status
+            </button>
+
+            <button
+              className={clubCard === "players" ? "active-card" : ""}
+              onClick={() => setClubCard("players")}
+            >
+              Players
+            </button>
           </div>
 
           {clubCard == "status" &&
-            <div className="skills-card">
-              <h3>Squad Strength</h3>
-              <p className="skills-sub">
-                Overall team performance indicators
-              </p>
+            <div className="profile-card">
+              <h3>Club Information</h3>
 
-              {[
-                { name: "Attack", value: 8.2 },
-                { name: "Midfield", value: 7.6 },
-                { name: "Defense", value: 8.0 },
-                { name: "Teamwork", value: 8.4 },
-                { name: "Fitness", value: 7.9 },
-              ].map((skill, index) => (
-                <div className="skill-row" key={index}>
-                  <div className="skill-top">
-                    <span>{skill.name}</span>
-                    <span className="skill-score">{skill.value}/10</span>
-                  </div>
+              <div className="club-info">
 
-                  <div className="skill-bar">
-                    <div
-                      className="skill-fill"
-                      style={{ width: `${skill.value * 10}%` }}
+                <div className="club-info-row">
+                  <span>
+                    <EventIcon
+                      sx={{
+                        fontSize: 18,
+                        verticalAlign: "middle",
+                        marginRight: "6px"
+                      }}
                     />
-                  </div>
+                    Founded
+                  </span>
+                  <strong>{stats?.founded_year ?? "Not Added"}</strong>
                 </div>
-              ))}
+
+                <div className="club-info-row">
+                  <span>State</span>
+                  <strong>{user.state}</strong>
+                </div>
+
+                <div className="club-info-row">
+                  <span>District</span>
+                  <strong>{user.district}</strong>
+                </div>
+
+                <div className="club-description">
+                  <div className="description-header">
+                    <h4>
+                      <DescriptionIcon
+                        sx={{
+                          fontSize: 20,
+                          verticalAlign: "middle",
+                          marginRight: "6px"
+                        }}
+                      />
+                      Description
+                    </h4>
+
+                    <button
+                      className="edit-description-btn"
+                      onClick={() => {
+                        setDescription(stats?.description || "");
+                        setDescriptionModule(true);
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </div>
+
+                  <p>
+                    {stats?.description || "No description available."}
+                  </p>
+                </div>
+
+              </div>
             </div>
           }
 
           {clubCard == "players" &&
-            <div className="skills-card">
+            <div className="profile-card">
               <h3>Players</h3>
-              <p className="skills-sub">
+              <p className="about-sub">
                 Players currently in the club
               </p>
 
@@ -203,9 +336,14 @@ function Profile({ user, ssr, ssl, logout }) {
                 </div>) : (
                 fetchPlayer.map((player) => (
                   <div className="player-row" key={player.user_id}>
-                    <h4>{player.player_name}</h4>
-                    <p>{player.position}</p>
-                    <p>{player.state} - {player.district}</p>
+                    <div>
+                      <h4>{player.player_name}</h4>
+                      <small>{player.position}</small>
+                    </div>
+
+                    <div className="player-location">
+                      📍 {player.state}, {player.district}
+                    </div>
                   </div>
                 )))}
             </div>
@@ -218,6 +356,92 @@ function Profile({ user, ssr, ssl, logout }) {
       <button className="logout-btn" onClick={logout}>
         Logout
       </button>
+
+      {descriptionModule && (
+        <div
+          className="modal-overlay"
+          onClick={() => setDescriptionModule(false)}
+        >
+          <div
+            className="description-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <h2>Edit Club Description</h2>
+
+            <textarea
+              rows="6"
+              value={description}
+              onChange={(e) =>
+                setDescription(e.target.value)
+              }
+              placeholder="Tell everyone about your club..."
+            />
+
+            <div className="popup-actions">
+              <button
+                className="cancel-btn"
+                onClick={() =>
+                  setDescriptionModule(false)
+                }
+              >
+                Cancel
+              </button>
+
+              <button
+                className="save-btn"
+                onClick={updateDescription}
+              >
+                Save
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {bioModule && (
+        <div
+          className="modal-overlay"
+          onClick={() => setBioModule(false)}
+        >
+
+          <div
+            className="description-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <h2>Edit Bio</h2>
+
+            <textarea
+              rows="6"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell everyone about yourself..."
+            />
+
+            <div className="popup-actions">
+
+              <button
+                className="cancel-btn"
+                onClick={() => setBioModule(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="save-btn"
+                onClick={updateBio}
+              >
+                Save
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

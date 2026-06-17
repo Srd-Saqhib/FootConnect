@@ -507,3 +507,48 @@
 
   box-shadow: 0 4px 12px rgba(0,0,0,.05);
 }
+
+.form-section{
+    margin:12px 0;
+}
+
+.section-label{
+    display:block;
+    margin-bottom:6px;
+
+    font-size:13px;
+    font-weight:600;
+    color:#64748b;
+
+    letter-spacing:.3px;
+}
+
+.form-row{
+    display:flex;
+    gap:15px;
+}
+
+.form-row .form-section{
+    flex:1;
+}
+
+.friendly-modal select{
+    width:100%;
+
+    padding:12px;
+
+    border:1px solid #d1d5db;
+    border-radius:8px;
+
+    font-size:15px;
+    color:#374151;
+
+    background:#fff;
+
+    outline:none;
+}
+
+.friendly-modal select:focus{
+    border-color:#1F3897;
+    box-shadow:0 0 0 3px rgba(31,56,151,.12);
+}
