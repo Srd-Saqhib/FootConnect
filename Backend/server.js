@@ -4,11 +4,37 @@ import axios from "axios";
 import { Pool } from "pg";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import http from "http";
+import { Server } from "socket.io";
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
 const PORT = 4000;
 dotenv.config();
 const football_api = process.env.FOOTBALL_NEWS_API;
+
+io.on("connection", (socket) => {
+  socket.on("joinClub", (clubId) => {
+
+    socket.join(`club-${clubId}`);
+
+    console.log(
+      socket.id,
+      "joined",
+      `club-${clubId}`
+    );
+
+  });
+
+});
 
 const db = new Pool({
   user: "postgres",
@@ -1919,6 +1945,153 @@ app.put("/api/player/bio", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+//stats in the home page
+app.get("/api/home/stats", async (req, res) => {
+  try {
+
+    const players = await db.query(
+      "SELECT COUNT(*) FROM players"
+    );
+
+    const clubs = await db.query(
+      "SELECT COUNT(*) FROM clubs"
+    );
+
+    const tournaments = await db.query(
+      "SELECT COUNT(*) FROM tournaments"
+    );
+
+    const friendlies = await db.query(
+      "SELECT COUNT(*) FROM friendly_matches"
+    );
+
+    res.json({
+      players: players.rows[0].count,
+      clubs: clubs.rows[0].count,
+      tournaments: tournaments.rows[0].count,
+      friendlies: friendlies.rows[0].count
+    });
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false
+    });
+  }
+});
+
+//send message in chats
+app.post("/api/sendMessage", async (req, res) => {
+  try {
+    const { message, userId, clubId } = req.body;
+
+    if (!message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Message cannot be empty."
+      });
+    }
+
+    const result = await db.query(
+      `INSERT INTO club_messages
+        (club_id, sender_id, message)
+        VALUES ($1,$2,$3)
+        RETURNING
+        id,
+        club_id,
+        sender_id,
+        message,
+        created_at`,
+      [clubId, userId, message]
+    );
+
+    const msg = await db.query(
+      `SELECT
+          cm.id,
+          cm.club_id,
+          cm.sender_id,
+          cm.message,
+          cm.created_at,
+          u.name
+      FROM club_messages cm
+
+      JOIN users u
+      ON cm.sender_id = u.id
+
+      WHERE cm.id = $1`,
+      [result.rows[0].id]
+    );
+
+    const clubResult = await db.query(
+      "SELECT club_id FROM players WHERE user_id = $1",
+      [userId]
+    );
+
+    if (
+      clubResult.rows.length === 0 ||
+      clubResult.rows[0].club_id === null
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Player is not in a club."
+      });
+    }
+
+    const realClubId = clubResult.rows[0].club_id;
+
+    io.to(`club-${realClubId}`).emit(
+      "newMessage",
+      msg.rows[0]
+    );
+
+    res.json({
+      success: true,
+      message: msg.rows[0]
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
+});
+
+//retrive messgaes
+app.get("/api/getMessages", async (req, res) => {
+  try {
+    const { clubId } = req.query;
+
+    const messages = await db.query(
+      `SELECT
+        cm.id,
+        cm.message,
+        cm.created_at,
+        cm.sender_id,
+        u.name
+        FROM club_messages cm
+        JOIN users u
+        ON cm.sender_id = u.id
+        WHERE cm.club_id = $1
+        ORDER BY cm.created_at ASC`,
+      [clubId]
+    );
+
+    res.json({
+      success: true,
+      messages: messages.rows
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

@@ -8,10 +8,12 @@ import TournamentCard from "../components/TournamentCard";
 function Home(props) {
   const [friendlyMatches, setFriendlyMatches] = useState([]);
   const [tournamentMatches, setTournamentMatches] = useState([]);
+  const [stats, setStats] = useState({});
 
   useEffect(() => {
     fetchFriendlies();
     fetchTournament();
+    fetchStats();
   }, []);
 
   async function fetchFriendlies() {
@@ -30,6 +32,18 @@ function Home(props) {
       setTournamentMatches(res.data.tournaments);
     }
     catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function fetchStats() {
+    try {
+
+      const res = await axios.get("/api/home/stats");
+
+      setStats(res.data);
+
+    } catch (error) {
       console.log(error);
     }
   }
@@ -80,23 +94,35 @@ function Home(props) {
       </div>
 
       <div className="stats">
-        <h3>Current Stats</h3>
+
+        <h3>Community Statistics</h3>
+
         <div className="statgroup">
+
           <div className="sbox">
-            <h2>1500+</h2>
-            <p>Active player</p>
+            <h2>{stats.players ?? 0}</h2>
+            <p>Registered Players</p>
           </div>
+
           <div className="sbox">
-            <h2>50+</h2>
-            <p>Clubs</p>
+            <h2>{stats.clubs ?? 0}</h2>
+            <p>Registered Clubs</p>
           </div>
+
           <div className="sbox">
-            <h2>100+</h2>
-            <p>Matches</p>
+            <h2>{stats.tournaments ?? 0}</h2>
+            <p>Active Tournaments</p>
           </div>
+
+          <div className="sbox">
+            <h2>{stats.friendlies ?? 0}</h2>
+            <p>Friendly Matches</p>
+          </div>
+
         </div>
+
       </div>
-      
+
     </div>
   );
 }

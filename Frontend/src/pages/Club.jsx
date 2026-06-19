@@ -5,6 +5,10 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import axios from "axios";
 import Btn from "../components/Btn";
 import "../styles/club.css";
+import { useRef } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:4000");
 
 function Clubs(props) {
   const [localClubs, setLocalClubs] = useState([]);
@@ -29,6 +33,31 @@ function Clubs(props) {
   const [endDate, setEndDate] = useState("");
   const [maxTeams, setMaxTeams] = useState("");
   const [tournamentDescription, setTournamentDescription] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+  const [clubMessages, setClubMessages] = useState([]);
+
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    function handleConnect() {
+      console.log("Connected:", socket.id);
+    }
+
+    socket.on("connect", handleConnect);
+    socket.emit("hello", {
+      name: props.currentUser?.name
+    });
+
+    return () => {
+      socket.off("connect", handleConnect);
+    };
+  }, []);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+  }, [clubMessages]);
 
   useEffect(() => {
     if (props.currentUser) {
@@ -44,6 +73,33 @@ function Clubs(props) {
     }
   }, [props.currentUser]);
 
+  useEffect(() => {
+
+    function handleNewMessage(message) {
+
+      console.log("Received:", message);
+
+      setClubMessages(prev => [...prev, message]);
+
+    }
+
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage);
+    };
+
+  }, []);
+
+  useEffect(() => {
+    if (props.currentUser?.user_club_id) {
+
+      socket.emit(
+        "joinClub",
+        props.currentUser.user_club_id
+      );
+    }
+  }, [props.currentUser]);
 
   async function getClub() {
     const result = await axios.get("/api/clubs", {
@@ -66,8 +122,11 @@ function Clubs(props) {
 
   function openWindow() {
     setShowWindow(prev => !prev);
-  }
 
+    if (!showWindow && props.currentUser?.user_club_id) {
+      getMessages();
+    }
+  }
 
   function changePanel(value) {
     setWbutton(value);
@@ -216,6 +275,38 @@ function Clubs(props) {
     }
   }
 
+  async function getMessages() {
+    try {
+      const res = await axios.get("/api/getMessages", {
+        params: {
+          clubId: props.currentUser.user_club_id
+        }
+      });
+      setClubMessages(res.data.messages);
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+
+  async function sendMessage() {
+    try {
+      if (inputMessage.trim() === "") {
+        return;
+      }
+
+      await axios.post("/api/sendMessage", {
+        message: inputMessage,
+        userId: props.currentUser.id,
+        clubId: props.currentUser.user_club_id
+      });
+      setInputMessage("");
+    }
+    catch (error) {
+      console.log(error);
+    }
+  }
+
 
   return (
     <div className="clubs-page">
@@ -263,9 +354,60 @@ function Clubs(props) {
 
                   ) : (
 
-                    <div className="chat-empty">
-                      <span>Club chat coming soon... 💬</span>
-                    </div>
+                    <>
+
+                      <div className="chat-messages">
+
+                        {clubMessages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={
+                              message.sender_id === props.currentUser.id
+                                ? "chat-message self"
+                                : "chat-message"
+                            }
+                          >
+                            <div className="chat-avatar">
+                              {message.name.charAt(0).toUpperCase()}
+                            </div>
+
+                            <div className="chat-bubble">
+                              <strong>{message.name}</strong>
+
+                              <p>{message.message}</p>
+
+                              <small>
+                                {new Date(message.created_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </small>
+                            </div>
+                          </div>
+                        ))}
+                        <div ref={bottomRef}></div>
+                      </div>
+
+                      <div className="chat-input-container">
+                        <input
+                          value={inputMessage}
+                          onChange={(e) => setInputMessage(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              sendMessage();
+                            }
+                          }}
+                        />
+
+                        <button
+                          disabled={!inputMessage.trim()}
+                          onClick={sendMessage}
+                        >
+                          Send
+                        </button>
+                      </div>
+
+                    </>
 
                   )}
 
