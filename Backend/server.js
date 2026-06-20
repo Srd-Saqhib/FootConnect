@@ -17,7 +17,7 @@ const io = new Server(server, {
   }
 });
 
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 dotenv.config();
 const football_api = process.env.FOOTBALL_NEWS_API;
 
