@@ -349,7 +349,22 @@ function Clubs(props) {
                     !props.currentUser?.user_club_id ? (
 
                     <div className="chat-empty">
-                      <span>Join a club to access club chat ⚽</span>
+
+                      <div className="chat-empty-card">
+
+                        <div className="chat-empty-icon">
+                          💬
+                        </div>
+
+                        <h3>Club Chat Locked</h3>
+
+                        <p>
+                          Join a football club to chat with your teammates,
+                          discuss tactics, and stay updated with club announcements.
+                        </p>
+
+                      </div>
+
                     </div>
 
                   ) : (
@@ -469,7 +484,9 @@ function Clubs(props) {
                 Create
               </button>
             ) : (
-              <p>Follow a club before creating a friendly.</p>
+              <p className="empty-follow">
+                👥 Follow another club to unlock friendly matches.
+              </p>
             )}
           </div>
 
@@ -637,87 +654,115 @@ function Clubs(props) {
         {/* Nearby Clubs */}
         <h1 className="page-title">Nearby Clubs - {props.currentUser.district}</h1>
         <div className="clubs-grid">
-          {localClubs.map((club) => (
-            <div className="club-box" key={club.id}>
-              <div className="club-header">
-                <h3>{club.club_name}</h3>
-                {/* <span className="rating">⭐ {club.rating}</span> */}
-              </div>
+          {localClubs.length === 0 ? (
 
-              <p className="club-location">{club.state} - {club.district}</p>
-              <p className="club-members">
-                {Number(club.player_count) > 0
-                  ? club.player_count
-                  : "No members"}
+            <div className="empty-clubs">
+              <div className="empty-clubs-icon">⚽</div>
+
+              <h3>No Nearby Clubs</h3>
+
+              <p>
+                There are currently no registered clubs in your district.
               </p>
-              <Btn
-                text={
-                  props.currentUser?.role === "player"
-                    ? "Join Club"
-                    : props.currentUser?.user_club_id === club.id
-                      ? "View Club"
-                      : club.is_following
-                        ? "Unfollow"
-                        : "Follow Club"
-                }
-                color="#1F3897"
-                onClick={() => {
-                  console.log("BUTTON CLICKED");
-                  console.log(club);
-
-                  if (props.currentUser?.role === "player") {
-                    reqClub(club.id);
-                  } else if (props.currentUser?.user_club_id === club.id) {
-                    viewClub(club.id);
-                  } else {
-                    followClub(club.id);
-                  }
-                }}
-              />
             </div>
-          ))}
+
+          ) : (
+            localClubs.map((club) => (
+              <div className="club-box" key={club.id}>
+                <div className="club-header">
+                  <h3>{club.club_name}</h3>
+                  {/* <span className="rating">⭐ {club.rating}</span> */}
+                </div>
+
+                <p className="club-location">{club.state} - {club.district}</p>
+                <p className="club-members">
+                  {Number(club.player_count) > 0
+                    ? club.player_count
+                    : "No members"}
+                </p>
+                <Btn
+                  text={
+                    props.currentUser?.role === "player"
+                      ? "Join Club"
+                      : props.currentUser?.user_club_id === club.id
+                        ? "View Club"
+                        : club.is_following
+                          ? "Unfollow"
+                          : "Follow Club"
+                  }
+                  color="#1F3897"
+                  onClick={() => {
+                    console.log("BUTTON CLICKED");
+                    console.log(club);
+
+                    if (props.currentUser?.role === "player") {
+                      reqClub(club.id);
+                    } else if (props.currentUser?.user_club_id === club.id) {
+                      viewClub(club.id);
+                    } else {
+                      followClub(club.id);
+                    }
+                  }}
+                />
+              </div>
+            ))
+          )}
         </div></div>}
 
       {props.currentUser && <div>
         {/* State Clubs */}
         <h1 className="page-title">Clubs in {props.currentUser.state}</h1>
         <div className="clubs-grid">
-          {stateClubs.map((club) => (
-            <div className="club-box" key={club.id}>
-              <div className="club-header">
-                <h3>{club.club_name}</h3>
-                {/* <span className="rating">⭐ {club.rating}</span> */}
-              </div>
+          {stateClubs.length === 0 ? (
 
-              <p className="club-location">{club.state} - {club.district}</p>
-              <p className="club-members">
-                {Number(club.player_count) > 0
-                  ? club.player_count
-                  : "No members"}
+            <div className="empty-clubs">
+              <div className="empty-clubs-icon">🏟️</div>
+
+              <h3>No Clubs Found</h3>
+
+              <p>
+                No football clubs are registered in your state yet.
               </p>
-              <Btn
-                text={
-                  props.currentUser?.role === "player"
-                    ? "Join Club"
-                    : props.currentUser?.user_club_id === club.id
-                      ? "View Club"
-                      : club.is_following
-                        ? "Unfollow"
-                        : "Follow Club"
-                }
-                color="#1F3897"
-                onClick={() => {
-                  if (props.currentUser?.role === "player") {
-                    reqClub(club.id);
-                  } else if (props.currentUser?.user_club_id === club.id) {
-                    viewClub(club.id);
-                  } else {
-                    followClub(club.id);
-                  }
-                }}
-              />
             </div>
-          ))}
+
+          ) : (
+            stateClubs.map((club) => (
+              <div className="club-box" key={club.id}>
+                <div className="club-header">
+                  <h3>{club.club_name}</h3>
+                  {/* <span className="rating">⭐ {club.rating}</span> */}
+                </div>
+
+                <p className="club-location">{club.state} - {club.district}</p>
+                <p className="club-members">
+                  {Number(club.player_count) > 0
+                    ? club.player_count
+                    : "No members"}
+                </p>
+                <Btn
+                  text={
+                    props.currentUser?.role === "player"
+                      ? "Join Club"
+                      : props.currentUser?.user_club_id === club.id
+                        ? "View Club"
+                        : club.is_following
+                          ? "Unfollow"
+                          : "Follow Club"
+                  }
+                  color="#1F3897"
+                  onClick={() => {
+                    if (props.currentUser?.role === "player") {
+                      reqClub(club.id);
+                    } else if (props.currentUser?.user_club_id === club.id) {
+                      viewClub(club.id);
+                    } else {
+                      followClub(club.id);
+                    }
+                  }}
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>}
 
@@ -725,42 +770,56 @@ function Clubs(props) {
       {/* National Clubs */}
       <h1 className="page-title">National Clubs</h1>
       <div className="clubs-grid">
-        {nationalClubs.map((club) => (
-          <div className="club-box" key={club.id}>
-            <div className="club-header">
-              <h3>{club.club_name}</h3>
-              {/* <span className="rating">⭐ {club.rating}</span> */}
-            </div>
+        {nationalClubs.length === 0 ? (
 
-            <p className="club-location">{club.state} - {club.district}</p>
-            <p className="club-members">
-              {Number(club.player_count) > 0
-                ? club.player_count
-                : "No members"}
+          <div className="empty-clubs">
+            <div className="empty-clubs-icon">🇮🇳</div>
+
+            <h3>No Clubs Available</h3>
+
+            <p>
+              Clubs will appear here once they register on FootConnect.
             </p>
-            <Btn
-              text={
-                props.currentUser?.role === "player"
-                  ? "Join Club"
-                  : props.currentUser?.user_club_id === club.id
-                    ? "View Club"
-                    : club.is_following
-                      ? "Unfollow"
-                      : "Follow Club"
-              }
-              color="#1F3897"
-              onClick={() => {
-                if (props.currentUser?.role === "player") {
-                  reqClub(club.id);
-                } else if (props.currentUser?.user_club_id === club.id) {
-                  viewClub(club.id);
-                } else {
-                  followClub(club.id);
-                }
-              }}
-            />
           </div>
-        ))}
+
+        ) : (
+          nationalClubs.map((club) => (
+            <div className="club-box" key={club.id}>
+              <div className="club-header">
+                <h3>{club.club_name}</h3>
+                {/* <span className="rating">⭐ {club.rating}</span> */}
+              </div>
+
+              <p className="club-location">{club.state} - {club.district}</p>
+              <p className="club-members">
+                {Number(club.player_count) > 0
+                  ? club.player_count
+                  : "No members"}
+              </p>
+              <Btn
+                text={
+                  props.currentUser?.role === "player"
+                    ? "Join Club"
+                    : props.currentUser?.user_club_id === club.id
+                      ? "View Club"
+                      : club.is_following
+                        ? "Unfollow"
+                        : "Follow Club"
+                }
+                color="#1F3897"
+                onClick={() => {
+                  if (props.currentUser?.role === "player") {
+                    reqClub(club.id);
+                  } else if (props.currentUser?.user_club_id === club.id) {
+                    viewClub(club.id);
+                  } else {
+                    followClub(club.id);
+                  }
+                }}
+              />
+            </div>
+          ))
+        )}
       </div>
 
     </div>

@@ -687,18 +687,58 @@
     background:#162d7b;
 }
 
-.chat-empty{
-    height:100%;
+.chat-empty {
+  flex: 1;
 
-    display:flex;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-    justify-content:center;
+  padding: 25px;
+}
 
-    align-items:center;
+.chat-empty-card {
 
-    font-size:18px;
+  max-width: 340px;
 
-    color:#6b7280;
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 35px 28px;
+
+  text-align: center;
+
+  border: 2px dashed #d8e3ff;
+
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.chat-empty-icon {
+
+  font-size: 54px;
+
+  margin-bottom: 18px;
+}
+
+.chat-empty-card h3 {
+
+  margin: 0;
+
+  color: #1F3897;
+
+  font-size: 22px;
+}
+
+.chat-empty-card p {
+
+  margin-top: 14px;
+
+  color: #64748b;
+
+  line-height: 1.7;
+
+  font-size: 14px;
 }
 
 .chat-bubble small{
@@ -711,4 +751,63 @@
 .chat-input-container button:disabled{
     opacity:.5;
     cursor:not-allowed;
+}
+
+/* ---------- EMPTY CLUBS ---------- */
+
+.empty-clubs{
+
+    grid-column:1/-1;
+
+    background:white;
+
+    border:2px #d6e2ff;
+
+    border-radius:18px;
+
+    padding:60px 30px;
+
+    text-align:center;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.05);
+}
+
+.empty-clubs-icon{
+
+    font-size:60px;
+
+    margin-bottom:18px;
+}
+
+.empty-clubs h3{
+
+    color:#1F3897;
+
+    margin-bottom:10px;
+
+    font-size:26px;
+}
+
+.empty-clubs p{
+
+    color:#64748b;
+
+    max-width:500px;
+
+    margin:auto;
+
+    line-height:1.7;
+}
+
+.empty-follow{
+
+    color:#64748b;
+
+    background:#f8fafc;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    text-align:center;
 }

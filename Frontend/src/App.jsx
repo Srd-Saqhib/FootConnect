@@ -96,6 +96,7 @@ function App() {
             tournament={selectedTournament}
             onBack={() => setSelectedTournament(null)}
             clubId={currentUser?.user_club_id}
+            role={currentUser?.role}
             setToast={setToast}
             refreshTournament={refreshTournament}
           />

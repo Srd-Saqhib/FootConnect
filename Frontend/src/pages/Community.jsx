@@ -226,138 +226,159 @@ function Community(props) {
       <h1 className="page-title">Community</h1>
 
       <div className="community-feed">
-        {posts.map((post) => (
-          <div className="post-card" key={post.id}>
-            <div className="post-header">
-              <div className="post-avatar">
-                {post.user?.charAt(0)}
-              </div>
-              <div>
-                <h4 className="post-user">{post.user}</h4>
-                <span className="post-time">{new Date(post.created_at).toLocaleString()}</span>
-              </div>
+        {posts.length === 0 ? (
 
-              <MoreVertIcon
-                className="post-menu-icon"
-                onClick={() =>
-                  setPostMenu(postMenu === post.id ? null : post.id)
-                }
-              />
+          <div className="empty-feed">
 
-              {postMenu === post.id && (
-                <>
-                  <div
-                    className="overlay"
-                    onClick={() => setPostMenu(null)}
-                  />
-
-                  {post.user_id === props.currentUser?.id ? (
-                    <div className="postMenu">
-                      <button onClick={() => editPost(post)}>
-                        Edit
-                      </button>
-
-                      <button onClick={() => deletePost(post.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="postMenu">
-                      <button onClick={() => reportPost(post.id)}>
-                        Report
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-
+            <div className="empty-feed-icon">
+              🌍
             </div>
 
-            <p className="post-content">{post.content}</p>
-            <div className="post-actions">
-              <button className="action-btn" onClick={() => { addLike(post.id) }}>
-                {post.liked_by_user
-                  ? <FavoriteIcon sx={{ color: "red" }} />
-                  : <FavoriteBorderIcon />
-                }
-                <span>{post.like_count}</span>
-              </button>
+            <h2>No Community Posts Yet</h2>
 
-              <button
-                className="action-btn"
-                onClick={() => { setOpenPost(openPost === post.id ? null : post.id); fetchComment(post.id) }}
-              >
-                <ChatBubbleOutlineIcon /> <span>{post.comment_count}</span>
-              </button>
+            <p>
 
-            </div>
+              Be the first member to share an update,
+              celebrate a victory, or start a football discussion.
 
-            {openPost === post.id && (
-              <div className="comment-section">
+            </p>
 
-                <div className="comments-list">
-                  {commentSection.map((comment) => {
-                    return <div className="single-comment" key={comment.id}>
-                      <div className="comment-header">
-                        <div className="comment-user">
-                          {comment.name}
+          </div>
+
+        ) : (
+          posts.map((post) => (
+            <div className="post-card" key={post.id}>
+              <div className="post-header">
+                <div className="post-avatar">
+                  {post.user?.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="post-user">{post.user}</h4>
+                  <span className="post-time">{new Date(post.created_at).toLocaleString()}</span>
+                </div>
+
+                <MoreVertIcon
+                  className="post-menu-icon"
+                  onClick={() =>
+                    setPostMenu(postMenu === post.id ? null : post.id)
+                  }
+                />
+
+                {postMenu === post.id && (
+                  <>
+                    <div
+                      className="overlay"
+                      onClick={() => setPostMenu(null)}
+                    />
+
+                    {post.user_id === props.currentUser?.id ? (
+                      <div className="postMenu">
+                        <button onClick={() => editPost(post)}>
+                          Edit
+                        </button>
+
+                        <button onClick={() => deletePost(post.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="postMenu">
+                        <button onClick={() => reportPost(post.id)}>
+                          Report
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+
+              </div>
+
+              <p className="post-content">{post.content}</p>
+              <div className="post-actions">
+                <button className="action-btn" onClick={() => { addLike(post.id) }}>
+                  {post.liked_by_user
+                    ? <FavoriteIcon sx={{ color: "red" }} />
+                    : <FavoriteBorderIcon />
+                  }
+                  <span>{post.like_count}</span>
+                </button>
+
+                <button
+                  className="action-btn"
+                  onClick={() => { setOpenPost(openPost === post.id ? null : post.id); fetchComment(post.id) }}
+                >
+                  <ChatBubbleOutlineIcon /> <span>{post.comment_count}</span>
+                </button>
+
+              </div>
+
+              {openPost === post.id && (
+                <div className="comment-section">
+
+                  <div className="comments-list">
+                    {commentSection.map((comment) => {
+                      return <div className="single-comment" key={comment.id}>
+                        <div className="comment-header">
+                          <div className="comment-user">
+                            {comment.name}
+                          </div>
+
+                          {comment.user_id === props.currentUser?.id && (
+                            <MoreVertIcon
+                              className="comment-menu-icon"
+                              onClick={() =>
+                                setCommentMenu(
+                                  commentMenu === comment.id
+                                    ? null
+                                    : comment.id
+                                )
+                              }
+                            />
+                          )}
+
                         </div>
 
-                        {comment.user_id === props.currentUser?.id && (
-                          <MoreVertIcon
-                            className="comment-menu-icon"
-                            onClick={() =>
-                              setCommentMenu(
-                                commentMenu === comment.id
-                                  ? null
-                                  : comment.id
-                              )
-                            }
-                          />
+                        <div className="comment-text">
+                          {comment.comment}
+                        </div>
+
+                        {commentMenu === comment.id && (
+                          <>
+                            <div
+                              className="overlay"
+                              onClick={() => setCommentMenu(null)}
+                            />
+
+                            <div className="commentMenu">
+                              <button
+                                onClick={() => { editComment(comment) }}
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                onClick={() => deleteComment(comment.id, post.id)}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </>
                         )}
 
                       </div>
+                    })}
+                  </div>
 
-                      <div className="comment-text">
-                        {comment.comment}
-                      </div>
+                  <div className="comment-input">
+                    <input value={comment} onChange={(e) => { setComment(e.target.value) }} />
+                    <button onClick={() => { addComment(post.id, comment) }}> {editingCommentId ? "Update" : "Post"} </button>
+                  </div>
 
-                      {commentMenu === comment.id && (
-                        <>
-                          <div
-                            className="overlay"
-                            onClick={() => setCommentMenu(null)}
-                          />
-
-                          <div className="commentMenu">
-                            <button
-                              onClick={() => { editComment(comment) }}
-                            >
-                              Edit
-                            </button>
-
-                            <button
-                              onClick={() => deleteComment(comment.id, post.id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </>
-                      )}
-
-                    </div>
-                  })}
                 </div>
-
-                <div className="comment-input">
-                  <input value={comment} onChange={(e) => { setComment(e.target.value) }} />
-                  <button onClick={() => { addComment(post.id, comment) }}> {editingCommentId ? "Update" : "Post"} </button>
-                </div>
-
-              </div>
-            )}
-          </div>
-        ))}
+              )}
+            </div>
+          ))
+        )}
       </div>
 
       <Button

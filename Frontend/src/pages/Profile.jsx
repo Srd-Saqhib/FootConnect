@@ -14,6 +14,7 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
   const [description, setDescription] = useState("");
   const [bioModule, setBioModule] = useState(false);
   const [bio, setBio] = useState("");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const isPlayer = user?.role === "player";
   const isClub = user?.role === "club";
@@ -353,9 +354,53 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
       )}
 
 
-      <button className="logout-btn" onClick={logout}>
+      <button
+        className="logout-btn"
+        onClick={() => setShowLogoutModal(true)}
+      >
         Logout
       </button>
+
+      {showLogoutModal && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowLogoutModal(false)}
+        >
+          <div
+            className="logout-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+
+            <h2>Logout</h2>
+
+            <p>
+              Are you sure you want to logout?
+            </p>
+
+            <div className="logout-buttons">
+
+              <button
+                className="cancel-btn"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="logout-btn"
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  logout();
+                }}
+              >
+                Logout
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {descriptionModule && (
         <div

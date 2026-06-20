@@ -10,12 +10,18 @@
   gap: 20px;
 }
 
-.post-card {
-  background-color: #ffffff;
-  padding: 18px 20px;
-  border-radius: 14px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #eef2f7;
+.post-card{
+  background: #fff;
+
+  border-radius: 18px;
+
+  padding: 22px;
+
+  border: 1px solid #e8edf5;
+
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
+
+  transition: .25s ease;
 
   position: relative;
 }
@@ -53,10 +59,19 @@
 }
 
 /* Content */
-.post-content {
-  font-size: 15px;
-  color: #374151;
-  line-height: 1.6;
+.post-content{
+
+  margin-top:15px;
+
+  font-size:15px;
+
+  line-height:1.8;
+
+  color:#374151;
+
+  white-space:pre-wrap;
+
+  word-break:break-word;
 }
 
 .post-actions {
@@ -95,24 +110,44 @@
   padding-top: 10px;
 }
 
-.single-comment {
-  background: #f1f5f9;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 13px;
+.single-comment{
+
+  background:#f8fafc;
+
+  border:1px solid #e5e7eb;
+
+  padding:12px 14px;
+
+  border-radius:12px;
 }
 
-.comment-input {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
+.comment-input{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-top:16px;
 }
 
-.comment-input input {
-  flex: 1;
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+.comment-input input{
+
+  flex:1;
+
+  border-radius:12px;
+
+  padding:10px 14px;
+
+  border:1px solid #d1d5db;
+
+  transition:.2s;
+}
+
+.comment-input input:focus{
+
+  border-color:#1F3897;
+
+  outline:none;
 }
 
 .comment-input button {
@@ -290,4 +325,48 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.empty-feed{
+
+    min-height:420px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    background:white;
+
+    border-radius:18px;
+
+    border:2px #d7e3ff;
+
+    box-shadow:0 10px 28px rgba(0,0,0,.05);
+}
+
+.empty-feed-icon{
+
+    font-size:70px;
+
+    margin-bottom:20px;
+}
+
+.empty-feed h2{
+
+    color:#1F3897;
+}
+
+.empty-feed p{
+
+    max-width:450px;
+
+    color:#64748b;
+
+    line-height:1.8;
 }

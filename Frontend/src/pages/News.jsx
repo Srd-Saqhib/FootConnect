@@ -6,6 +6,7 @@ function News() {
   const [news, setNews] = useState([]);
   const [indianNews, setIndianNews] = useState([]);
   const [globalNews, setGlobalNews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   function DisplayNews(loc) {
     if (loc === "indian") {
@@ -21,21 +22,27 @@ function News() {
 
   async function getNews() {
     try {
+      setLoading(true);
+
       const result = await axios.get("/api/news");
+
       setNews(result.data.indian);
       setIndianNews(result.data.indian);
       setGlobalNews(result.data.global);
+
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }
 
   function truncate(text, maxLength) {
-  if (!text) return "";
-  return text.length > maxLength
-    ? text.substring(0, maxLength) + "..."
-    : text;
-}
+    if (!text) return "";
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+  }
 
 
   return (
@@ -45,25 +52,38 @@ function News() {
         <button onClick={() => DisplayNews("indian")}>Indian</button>
         <button onClick={() => DisplayNews("global")}>Global</button>
       </div>
-      
+
       <div className="news-list">
-        {news.map((item) => (
-          <div className="news-box" key={item.article_id}>
-            <img src={item.image_url} alt={item.title} />
 
-            <div className="news-content">
-              <h3>{item.title}</h3>
-              <p className="news-date">{item.pubDate?.split(" ")[0]}</p>
-              <p className="news-summary">
-                {truncate(item.description, 200)}
-              </p>
+        {loading ? (
 
-              <a href={item.link} target="_blank" rel="noreferrer" className="read-more">
-                Read more →
-              </a>
-            </div>
+          <div className="news-loading">
+
+            <div className="loader"></div>
+
+            <p>Fetching latest football news...</p>
+
           </div>
-        ))}
+
+        ) : (
+          news.map((item) => (
+            <div className="news-box" key={item.article_id}>
+              <img src={item.image_url} alt={item.title} />
+
+              <div className="news-content">
+                <h3>{item.title}</h3>
+                <p className="news-date">{item.pubDate?.split(" ")[0]}</p>
+                <p className="news-summary">
+                  {truncate(item.description, 200)}
+                </p>
+
+                <a href={item.link} target="_blank" rel="noreferrer" className="read-more">
+                  Read more →
+                </a>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
     </div>

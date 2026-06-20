@@ -63,7 +63,16 @@ function Home(props) {
 
       <div className="friendlies-grid">
         {tournamentMatches.length === 0 ? (
-          <p>No tournaments available.</p>
+          <div className="empty-section">
+            <div className="empty-icon">🏆</div>
+
+            <h3>No Tournaments Yet</h3>
+
+            <p>
+              There are currently no active tournaments.
+              Check back later or create one to get started.
+            </p>
+          </div>
         ) : (
           tournamentMatches.map((tournament) => (
             <TournamentCard
@@ -82,7 +91,16 @@ function Home(props) {
 
       <div className="friendlies-grid">
         {friendlyMatches.length === 0 ? (
-          <p>No upcoming friendlies scheduled.</p>
+          <div className="empty-section">
+            <div className="empty-icon">⚽</div>
+
+            <h3>No Friendly Matches</h3>
+
+            <p>
+              No matches are scheduled right now.
+              Invite another club and organize your first friendly.
+            </p>
+          </div>
         ) : (
           friendlyMatches.map(match => (
             <FriendlyCard

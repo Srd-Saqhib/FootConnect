@@ -8,7 +8,7 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import UpdateResultModal from "../components/UpdateResultModal";
 
-function TournamentDetails({ tournament, onBack, clubId, setToast, refreshTournament }) {
+function TournamentDetails({ tournament, onBack, clubId, role, setToast, refreshTournament }) {
     const [registeredClubs, setRegisteredClubs] = useState([]);
     const [layout, setLayout] = useState("clubs");
     const [fixtureMatches, setFixtureMatches] = useState([]);
@@ -238,8 +238,8 @@ function TournamentDetails({ tournament, onBack, clubId, setToast, refreshTourna
                             ))
                         )}
                     </div>
-                    {tournament.host_club_id !== clubId &&
-                        clubId && (
+                    {role === "club" &&
+                        tournament.host_club_id !== clubId && (
 
                             <button
                                 className="register-btn"
