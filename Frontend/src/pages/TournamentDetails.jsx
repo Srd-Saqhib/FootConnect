@@ -1,4 +1,4 @@
-import "../styles/home.css";
+import "../styles/Home.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";

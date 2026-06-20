@@ -36,12 +36,19 @@ io.on("connection", (socket) => {
 
 });
 
+// const db = new Pool({
+//   user: "postgres",
+//   host: "localhost",
+//   database: "football",
+//   password: "12345678",
+//   port: 5432,
+// });
+
 const db = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "football",
-  password: "12345678",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 app.use(cors());

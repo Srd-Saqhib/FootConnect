@@ -11,7 +11,7 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import "./App.css";
 import TournamentDetails from "./pages/TournamentDetails";
-import Toast from "./components/Toast";
+import Toast from "./components/toast";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");

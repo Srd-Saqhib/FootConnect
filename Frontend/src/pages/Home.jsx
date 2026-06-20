@@ -79,7 +79,7 @@ function Home(props) {
               key={tournament.id}
               tournament={tournament}
               openTournament={props.openTournament}
-              clubId={props.currentUser.user_club_id}
+              clubId={props.currentUser ? props.currentUser.user_club_id : null}
             />
           ))
         )}
