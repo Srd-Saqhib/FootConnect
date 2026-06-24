@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/news.css";
-import axios from "axios";
+import api from "../api";
+import Loading from "../components/Loading";
 
 function News() {
   const [news, setNews] = useState([]);
@@ -24,7 +25,7 @@ function News() {
     try {
       setLoading(true);
 
-      const result = await axios.get("/api/news");
+      const result = await api.get("/api/news");
 
       setNews(result.data.indian);
       setIndianNews(result.data.indian);
@@ -57,13 +58,9 @@ function News() {
 
         {loading ? (
 
-          <div className="news-loading">
-
-            <div className="loader"></div>
-
-            <p>Fetching latest football news...</p>
-
-          </div>
+          <Loading
+            text="Fetching latest football news..."
+          />
 
         ) : (
           news.map((item) => (

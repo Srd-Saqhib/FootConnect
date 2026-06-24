@@ -1,0 +1,401 @@
+.player-profile{
+    width:min(1000px,92%);
+    margin:35px auto 60px;
+}
+
+/* ---------------- BACK ---------------- */
+
+.back-btn{
+
+    background:#1F3897;
+    color:white;
+
+    border:none;
+
+    padding:10px 22px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.25s;
+
+    margin-bottom:22px;
+}
+
+.back-btn:hover{
+
+    background:#162d7a;
+}
+
+/* ---------------- HEADER ---------------- */
+
+.player-header{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:30px;
+
+    background:white;
+
+    padding:32px;
+
+    border-radius:18px;
+
+    border:1px solid #e5e7eb;
+
+    box-shadow:0 8px 22px rgba(0,0,0,.06);
+
+    margin-bottom:22px;
+}
+
+.player-avatar{
+
+    width:110px;
+
+    height:110px;
+
+    border-radius:50%;
+
+    background:#eef2ff;
+
+    color:#1F3897;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-shrink:0;
+}
+
+.player-info{
+
+    flex:1;
+}
+
+.player-info h1{
+
+    color:#111827;
+
+    margin-bottom:12px;
+
+    font-size:2rem;
+}
+
+.player-meta{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:16px;
+}
+
+.player-meta span{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    color:#6b7280;
+
+    font-size:15px;
+}
+
+/* ---------------- ACTION ---------------- */
+
+.profile-actions{
+
+    display:flex;
+
+    justify-content:flex-end;
+
+    margin-bottom:22px;
+}
+
+.profile-btn{
+
+    background:#1F3897;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 30px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    transition:.25s;
+}
+
+.profile-btn:hover{
+
+    background:#162d7a;
+}
+
+/* ---------------- STATS ---------------- */
+
+.player-stats{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    gap:18px;
+
+    margin-bottom:22px;
+}
+
+.stat-card{
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:15px;
+
+    padding:22px;
+
+    text-align:center;
+
+    transition:.25s;
+}
+
+.stat-card:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#1F3897;
+
+    box-shadow:0 8px 18px rgba(0,0,0,.06);
+}
+
+.stat-card h2{
+
+    color:#1F3897;
+
+    margin-bottom:8px;
+
+    font-size:28px;
+}
+
+.stat-card p{
+
+    color:#6b7280;
+}
+
+.club-card{
+
+    cursor:pointer;
+}
+
+/* ---------------- TABS ---------------- */
+
+.player-tabs{
+
+    display:flex;
+
+    gap:12px;
+
+    justify-content:center;
+
+    margin-bottom:22px;
+
+    background:white;
+
+    padding:8px;
+
+    border-radius:14px;
+
+    border:1px solid #e5e7eb;
+}
+
+.player-tabs button{
+
+    flex:1;
+
+    border:none;
+
+    background:transparent;
+
+    padding:14px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    color:#6b7280;
+
+    border-radius:10px;
+
+    transition:.25s;
+}
+
+.player-tabs button:hover{
+
+    background:#f3f4f6;
+
+    color:#1F3897;
+}
+
+.player-tabs .active-tab{
+
+    background:#1F3897;
+
+    color:white;
+}
+
+/* ---------------- CONTENT ---------------- */
+
+.player-section{
+
+    background:white;
+
+    border:1px solid #e5e7eb;
+
+    border-radius:18px;
+
+    padding:25px;
+
+    box-shadow:0 8px 18px rgba(0,0,0,.05);
+}
+
+.player-section h2{
+
+    color:#1F3897;
+
+    margin-bottom:20px;
+}
+
+/* ---------------- POSTS ---------------- */
+
+.player-post{
+
+    border:1px solid #e5e7eb;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    margin-bottom:15px;
+
+    transition:.25s;
+}
+
+.player-post:hover{
+
+    border-color:#1F3897;
+
+    box-shadow:0 6px 14px rgba(0,0,0,.06);
+}
+
+.player-post p{
+
+    color:#374151;
+
+    line-height:1.6;
+
+    margin-bottom:10px;
+}
+
+.player-post small{
+
+    color:#9ca3af;
+}
+
+/* ---------------- ABOUT ---------------- */
+
+.about-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    padding:14px 0;
+
+    border-bottom:1px solid #eef2f7;
+}
+
+.about-row:last-child{
+
+    border-bottom:none;
+}
+
+.about-title{
+
+    color:#6b7280;
+
+    font-weight:600;
+}
+
+.about-value{
+
+    color:#111827;
+}
+
+.pending{
+
+    background:#f59e0b;
+
+    cursor:not-allowed;
+}
+
+.pending:hover{
+
+    background:#f59e0b;
+}
+
+.connected{
+
+    background:#16a34a;
+
+    cursor:default;
+}
+
+.connected:hover{
+
+    background:#16a34a;
+}
+
+/* ---------------- MOBILE ---------------- */
+
+@media(max-width:768px){
+
+    .player-header{
+
+        flex-direction:column;
+
+        text-align:center;
+    }
+
+    .player-meta{
+
+        justify-content:center;
+    }
+
+    .player-stats{
+
+        grid-template-columns:1fr;
+    }
+
+    .player-tabs{
+
+        flex-direction:column;
+    }
+}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../styles/login.css";
-import axios from "axios";
+import api from "../api";
 
 function Login(props) {
     const [error, setError] = useState("");
@@ -10,7 +10,7 @@ function Login(props) {
     async function handleSubmit(e) {
         e.preventDefault();
         try {
-            const res = await axios.post("/api/login", {
+            const res = await api.post("/api/login", {
                 email,
                 password: password.trim()
             });

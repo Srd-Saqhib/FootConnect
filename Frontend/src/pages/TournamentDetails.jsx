@@ -1,6 +1,6 @@
 import "../styles/Home.css";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -23,7 +23,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
     async function registerClub() {
         try {
-            await axios.post("/api/tournament/register", {
+            await api.post("/api/tournament/register", {
                 clubId,
                 tournamentId: tournament.id
             });
@@ -59,7 +59,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
     async function getRegistered() {
         try {
-            const res = await axios.get("/api/tournament/registeredClub", {
+            const res = await api.get("/api/tournament/registeredClub", {
                 params: {
                     tournamentId: tournament.id
                 }
@@ -74,7 +74,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
     async function generateFixtures() {
         try {
-            const res = await axios.post(
+            const res = await api.post(
                 "/api/tournament/generateFixtures",
                 {
                     tournamentId: tournament.id
@@ -103,7 +103,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
     async function fetchFixtures() {
         try {
-            const res = await axios.get("/api/tournament/fetchFixtures", {
+            const res = await api.get("/api/tournament/fetchFixtures", {
                 params: {
                     tournamentId: tournament.id
                 }

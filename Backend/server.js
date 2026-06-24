@@ -34,6 +34,10 @@ io.on("connection", (socket) => {
 
   });
 
+  socket.on("joinPlayer",(playerId)=>{
+    socket.join(`player-${playerId}`);
+  })
+
 });
 
 // const db = new Pool({
@@ -250,7 +254,7 @@ app.post("/api/login", async (req, res) => {
 
     if (baseUser.role === "player") {
       const p = await db.query(
-        `SELECT state, district, position, club_id 
+        `SELECT id, state, district, position, club_id 
          FROM players WHERE user_id = $1`,
         [baseUser.id]
       );
@@ -284,6 +288,7 @@ app.post("/api/login", async (req, res) => {
       success: true,
       user: {
         id: baseUser.id,
+        player_id: profileData.id,
         name: baseUser.name,
         role: baseUser.role,
         user_club_id: profileData.club_id,
@@ -347,28 +352,58 @@ app.get("/api/posts", async (req, res) => {
 
     const result = await db.query(
       `SELECT
+
           posts.id,
           posts.user_id,
           posts.content,
           posts.created_at,
+
           users.name AS user,
+          users.role,
+
+          clubs.id AS club_id,
+
+          players.id AS player_id,
+
           COUNT(DISTINCT post_likes.id) AS like_count,
+
           COUNT(DISTINCT post_comments.id) AS comment_count,
-          EXISTS (
-            SELECT 1
-            FROM post_likes pl2
-            WHERE pl2.post_id = posts.id
-            AND pl2.user_id = $1
+
+          EXISTS(
+              SELECT 1
+              FROM post_likes pl
+              WHERE
+                  pl.post_id=posts.id
+              AND
+                  pl.user_id=$1
           ) AS liked_by_user
-        FROM posts
-        JOIN users
-          ON users.id = posts.user_id
-        LEFT JOIN post_likes
-          ON post_likes.post_id = posts.id
-        LEFT JOIN post_comments
-          ON post_comments.post_id = posts.id
-        GROUP BY posts.id, users.name
-        ORDER BY posts.created_at DESC`,
+
+          FROM posts
+
+          JOIN users
+          ON users.id=posts.user_id
+
+          LEFT JOIN clubs
+          ON clubs.user_id=users.id
+
+          LEFT JOIN players
+          ON players.user_id=users.id
+
+          LEFT JOIN post_likes
+          ON post_likes.post_id=posts.id
+
+          LEFT JOIN post_comments
+          ON post_comments.post_id=posts.id
+
+          GROUP BY
+
+          posts.id,
+          users.name,
+          users.role,
+          clubs.id,
+          players.id
+
+          ORDER BY posts.created_at DESC`,
       [userId]
     );
 
@@ -737,7 +772,8 @@ app.post("/api/club/request/:requestId", async (req, res) => {
 
 });
 
-app.get("/api/player/:user_id", async (req, res) => {
+//player belonging to a club
+app.get("/api/club/players/:user_id", async (req, res) => {
   try {
     const { user_id } = req.params;
 
@@ -1056,6 +1092,50 @@ app.post("/api/club/follow", async (req, res) => {
     console.log(error);
     res.status(500).json({
       success: false
+    });
+  }
+});
+
+//unfollow club
+app.post("/api/club/unfollow", async (req, res) => {
+
+  const { clubId, userId } = req.body;
+
+  try {
+    const club = await db.query(
+      `SELECT id
+        FROM clubs
+        WHERE user_id=$1`,
+      [userId]
+    );
+
+    if (club.rows.length === 0) {
+      return res.status(404).json({
+        message: "Club not found"
+      });
+    }
+
+    const followerClub = club.rows[0].id;
+
+    await db.query(
+      `DELETE FROM club_follows
+       WHERE follower_club_id=$1
+       AND followed_club_id=$2`,
+      [
+        followerClub,
+        clubId
+      ]
+    );
+
+    res.json({
+      success: true
+    });
+  }
+  catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      message: "Server Error"
     });
   }
 });
@@ -1987,7 +2067,7 @@ app.get("/api/home/stats", async (req, res) => {
   }
 });
 
-//send message in chats
+//send message in club chats
 app.post("/api/sendMessage", async (req, res) => {
   try {
     const { message, userId, clubId } = req.body;
@@ -2097,6 +2177,869 @@ app.get("/api/getMessages", async (req, res) => {
       success: false
     });
   }
+});
+
+//view club info
+app.get("/api/club/:id", async (req, res) => {
+  const clubId = req.params.id;
+  const userId = req.query.userId;
+
+  try {
+    const club = await db.query(
+      `SELECT * FROM clubs WHERE id=$1`,
+      [clubId]
+    );
+
+    const players = await db.query(
+      `SELECT id,player_name,position,bio
+       FROM players
+       WHERE club_id=$1`,
+      [clubId]
+    );
+
+    const followers = await db.query(
+      `SELECT COUNT(*) AS followers
+       FROM club_follows
+       WHERE followed_club_id=$1`,
+      [clubId]
+    );
+
+    const tournaments = await db.query(
+      `SELECT *
+       FROM tournaments
+       WHERE host_club_id=$1
+       ORDER BY start_date DESC`,
+      [clubId]
+    );
+
+    const friendlies = await db.query(
+      `SELECT *
+       FROM friendly_matches
+       WHERE host_club_id=$1
+       OR opponent_club_id=$1
+       ORDER BY match_date DESC`,
+      [clubId]
+    );
+
+    let isFollowing = false;
+
+    const user = await db.query(
+      `SELECT role
+        FROM users
+        WHERE id=$1`,
+      [userId]
+    );
+
+    if (user.rows.length > 0) {
+      const currentUser = user.rows[0];
+
+      if (currentUser.role === "club") {
+        const clubResult = await db.query(
+          `SELECT id
+       FROM clubs
+       WHERE user_id=$1`,
+          [userId]
+        );
+
+        if (clubResult.rows.length > 0) {
+
+          const followerClubId = clubResult.rows[0].id;
+
+          if (followerClubId != clubId) {
+            const follow = await db.query(
+              `SELECT *
+           FROM club_follows
+           WHERE follower_club_id=$1
+           AND followed_club_id=$2`,
+              [
+                followerClubId,
+                clubId
+              ]
+            );
+
+            isFollowing = follow.rows.length > 0;
+          }
+        }
+      }
+    }
+
+    const stats = {
+      followers: Number(followers.rows[0].followers),
+      players: players.rows.length,
+      tournaments: tournaments.rows.length,
+      friendlies: friendlies.rows.length
+    };
+
+    res.json({
+      club: club.rows[0],
+      players: players.rows,
+      tournaments: tournaments.rows,
+      friendlies: friendlies.rows,
+      stats,
+      isFollowing
+    });
+
+  }
+
+  catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      error: "Server Error"
+    });
+  }
+});
+
+// Leave club
+app.post("/api/club/leave", async (req, res) => {
+
+  const { userId } = req.body;
+
+  try {
+
+    const player = await db.query(
+      `SELECT *
+       FROM players
+       WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (player.rows.length === 0) {
+      return res.status(404).json({
+        message: "Player not found"
+      });
+    }
+
+    await db.query(
+      `UPDATE players
+       SET club_id = NULL
+       WHERE user_id = $1`,
+      [userId]
+    );
+
+    res.json({
+      message: "Club left successfully"
+    });
+
+  }
+  catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+//get my posts
+// Get my posts
+app.get("/api/posts/me/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+
+    const posts = await db.query(
+      `SELECT
+
+        posts.id,
+        posts.user_id,
+        posts.content,
+        posts.created_at,
+
+        users.name AS user,
+        users.role,
+
+        clubs.id AS club_id,
+
+        players.id AS player_id,
+
+        COUNT(DISTINCT post_likes.id) AS like_count,
+
+        COUNT(DISTINCT post_comments.id) AS comment_count,
+
+        EXISTS(
+          SELECT 1
+          FROM post_likes pl
+          WHERE
+            pl.post_id = posts.id
+          AND
+            pl.user_id = $1
+        ) AS liked_by_user
+
+      FROM posts
+
+      JOIN users
+        ON users.id = posts.user_id
+
+      LEFT JOIN clubs
+        ON clubs.user_id = users.id
+
+      LEFT JOIN players
+        ON players.user_id = users.id
+
+      LEFT JOIN post_likes
+        ON post_likes.post_id = posts.id
+
+      LEFT JOIN post_comments
+        ON post_comments.post_id = posts.id
+
+      WHERE posts.user_id = $1
+
+      GROUP BY
+        posts.id,
+        users.name,
+        users.role,
+        clubs.id,
+        players.id
+
+      ORDER BY posts.created_at DESC`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      posts: posts.rows
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      success: false
+    });
+
+  }
+});
+
+// Following feed
+// Following feed
+app.get("/api/posts/following/:userId", async (req, res) => {
+
+  const { userId } = req.params;
+
+  try {
+
+    const club = await db.query(
+      `SELECT id
+       FROM clubs
+       WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (club.rows.length === 0) {
+      return res.json({
+        success: true,
+        posts: []
+      });
+    }
+
+    const clubId = club.rows[0].id;
+
+    const posts = await db.query(
+      `SELECT
+
+        posts.id,
+        posts.user_id,
+        posts.content,
+        posts.created_at,
+
+        users.name AS user,
+        users.role,
+
+        clubs.id AS club_id,
+
+        players.id AS player_id,
+
+        COUNT(DISTINCT post_likes.id) AS like_count,
+
+        COUNT(DISTINCT post_comments.id) AS comment_count,
+
+        EXISTS(
+          SELECT 1
+          FROM post_likes pl
+          WHERE
+            pl.post_id = posts.id
+          AND
+            pl.user_id = $1
+        ) AS liked_by_user
+
+      FROM posts
+
+      JOIN users
+        ON users.id = posts.user_id
+
+      LEFT JOIN clubs
+        ON clubs.user_id = users.id
+
+      LEFT JOIN players
+        ON players.user_id = users.id
+
+      LEFT JOIN post_likes
+        ON post_likes.post_id = posts.id
+
+      LEFT JOIN post_comments
+        ON post_comments.post_id = posts.id
+
+      WHERE clubs.id IN (
+        SELECT followed_club_id
+        FROM club_follows
+        WHERE follower_club_id = $2
+      )
+
+      GROUP BY
+        posts.id,
+        users.name,
+        users.role,
+        clubs.id,
+        players.id
+
+      ORDER BY posts.created_at DESC`,
+      [userId, clubId]
+    );
+
+    res.json({
+      success: true,
+      posts: posts.rows
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+
+  }
+
+});
+
+// View player profile
+app.get("/api/player/:id", async (req, res) => {
+
+  const playerId = req.params.id;
+  const viewerUserId = req.query.viewerUserId;
+
+  try {
+
+    // Player details
+    const playerResult = await db.query(
+      `SELECT
+          p.*,
+          u.id AS user_id,
+          c.id AS club_id,
+          c.club_name
+       FROM players p
+       JOIN users u
+         ON p.user_id = u.id
+       LEFT JOIN clubs c
+         ON p.club_id = c.id
+       WHERE p.id = $1`,
+      [playerId]
+    );
+
+    if (playerResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Player not found"
+      });
+    }
+
+    const player = playerResult.rows[0];
+
+    let connectionStatus = "none";
+
+    if (viewerUserId) {
+
+      // Find viewer's player id
+      const viewer = await db.query(
+        `
+    SELECT id
+    FROM players
+    WHERE user_id = $1
+    `,
+        [viewerUserId]
+      );
+
+      if (viewer.rows.length > 0) {
+
+        const viewerPlayerId = viewer.rows[0].id;
+
+        const connection = await db.query(
+          `
+      SELECT status
+      FROM player_connections
+      WHERE
+      (
+        sender_player_id = $1
+        AND receiver_player_id = $2
+      )
+      OR
+      (
+        sender_player_id = $2
+        AND receiver_player_id = $1
+      )
+      `,
+          [
+            viewerPlayerId,
+            player.id
+          ]
+        );
+
+        if (connection.rows.length > 0) {
+          connectionStatus = connection.rows[0].status;
+        }
+
+      }
+
+    }
+
+    // Player posts
+    const posts = await db.query(
+      `SELECT
+          id,
+          content,
+          created_at
+       FROM posts
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [player.user_id]
+    );
+
+    // Stats
+    const stats = {
+      posts: posts.rows.length,
+      connections: 0
+    };
+
+    res.json({
+
+      player: {
+        id: player.id,
+        user_id: player.user_id,
+        player_name: player.player_name,
+        position: player.position,
+        bio: player.bio,
+        created_at: player.created_at
+      },
+
+      club: {
+        id: player.club_id,
+        club_name: player.club_name
+      },
+
+      posts: posts.rows,
+
+      stats,
+
+      connection_status: connectionStatus
+
+    });
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+
+  }
+
+});
+
+// Send player connection request
+app.post("/api/player/connect", async (req, res) => {
+
+  const { senderUserId, receiverPlayerId } = req.body;
+
+  try {
+
+    // Get sender's player id
+    const sender = await db.query(
+      `SELECT id
+       FROM players
+       WHERE user_id = $1`,
+      [senderUserId]
+    );
+
+    if (sender.rows.length === 0) {
+      return res.status(404).json({
+        message: "Sender not found"
+      });
+    }
+
+    const senderPlayerId = sender.rows[0].id;
+
+    const senderUser = await db.query(
+      `SELECT name
+        FROM users
+        WHERE id = $1`,
+      [senderUserId]
+    );
+
+    const receiver = await db.query(
+      `SELECT user_id
+   FROM players
+   WHERE id = $1`,
+      [receiverPlayerId]
+    );
+
+    if (receiver.rows.length === 0) {
+      return res.status(404).json({
+        message: "Receiver not found"
+      });
+    }
+
+    if (senderPlayerId == receiverPlayerId) {
+      return res.status(400).json({
+        message: "You cannot connect with yourself."
+      });
+    }
+
+    // Already requested?
+    const existing = await db.query(
+      `SELECT *
+       FROM player_connections
+       WHERE
+       (sender_player_id=$1 AND receiver_player_id=$2)
+       OR
+       (sender_player_id=$2 AND receiver_player_id=$1)`,
+      [
+        senderPlayerId,
+        receiverPlayerId
+      ]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({
+        message: "Connection already exists."
+      });
+    }
+
+    const connection = await db.query(
+      `INSERT INTO player_connections
+      (
+          sender_player_id,
+          receiver_player_id
+      )
+      VALUES($1,$2)
+      RETURNING id`,
+      [
+        senderPlayerId,
+        receiverPlayerId
+      ]
+    );
+
+    await db.query(
+      `INSERT INTO notifications
+      (
+          user_id,
+          actor_user_id,
+          type,
+          message,
+          request_id
+      )
+      VALUES($1,$2,$3,$4,$5)`,
+      [
+        receiver.rows[0].user_id,
+        senderUserId,
+        "player_connection",
+        `${senderUser.rows[0].name} wants to connect with you.`,
+        connection.rows[0].id
+      ]
+    );
+
+    res.json({
+      success: true
+    });
+
+  }
+  catch (err) {
+    console.log(err);
+
+    res.status(500).json({
+      message: "Server Error"
+    });
+  }
+});
+
+//player connection respond
+app.post("/api/player/connect/respond", async (req, res) => {
+  try {
+    const { connectionId, notificationId, action } = req.body;
+
+    if (action === "accept") {
+
+      await db.query(
+        `
+                UPDATE player_connections
+                SET status='accepted'
+                WHERE id=$1
+                `,
+        [connectionId]
+      );
+
+    }
+
+    else {
+
+      await db.query(
+        `
+                DELETE FROM player_connections
+                WHERE id=$1
+                `,
+        [connectionId]
+      );
+
+    }
+
+    await db.query(
+      `
+            UPDATE notifications
+            SET is_read=true
+            WHERE id=$1
+            `,
+      [notificationId]
+    );
+
+    res.json({
+      success: true
+    });
+
+  }
+  catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
+});
+
+//get connected players od  a user
+app.get("/api/player/connections/:userId", async (req, res) => {
+
+  try {
+
+    const { userId } = req.params;
+
+    const player = await db.query(
+      `
+        SELECT id
+        FROM players
+        WHERE user_id=$1
+        `,
+      [userId]
+    );
+
+    if (player.rows.length === 0) {
+
+      return res.status(404).json({
+        success: false
+      });
+
+    }
+
+    const playerId = player.rows[0].id;
+
+    const connections = await db.query(
+      `
+        SELECT
+
+            p.id,
+            p.player_name,
+            p.position,
+            c.club_name
+
+        FROM player_connections pc
+
+        JOIN players p
+
+        ON
+        (
+            (pc.sender_player_id=p.id
+             AND pc.receiver_player_id=$1)
+
+            OR
+
+            (pc.receiver_player_id=p.id
+             AND pc.sender_player_id=$1)
+        )
+
+        LEFT JOIN clubs c
+        ON p.club_id=c.id
+
+        WHERE pc.status='accepted'
+
+        ORDER BY p.player_name
+        `,
+      [playerId]
+    );
+
+    res.json({
+
+      success: true,
+
+      connections: connections.rows
+
+    });
+
+  }
+
+  catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+
+      success: false
+
+    });
+
+  }
+
+});
+
+//fetch player messages
+app.get("/api/player/messages/:playerId", async (req, res) => {
+  try {
+
+    const { playerId } = req.params;
+    const { userId } = req.query;
+
+    const sender = await db.query(
+      `
+      SELECT id
+      FROM players
+      WHERE user_id=$1
+      `,
+      [userId]
+    );
+
+    const senderPlayerId =
+      sender.rows[0].id;
+
+    const messages = await db.query(
+      `
+      SELECT *
+      FROM player_messages
+      WHERE
+
+      (
+      sender_player_id=$1
+      AND
+      receiver_player_id=$2
+      )
+
+      OR
+
+      (
+      sender_player_id=$2
+      AND
+      receiver_player_id=$1
+      )
+
+      ORDER BY created_at
+      `,
+      [
+        senderPlayerId,
+        playerId
+      ]
+    );
+
+    res.json({
+      success: true,
+      messages: messages.rows
+    });
+
+  }
+  catch (err) {
+    console.log(err);
+  }
+});
+
+//send player message
+app.post("/api/player/message/send", async (req, res) => {
+  const { senderUserId, receiverPlayerId, message } = req.body;
+
+  const sender =
+    await db.query(
+      `
+        SELECT id
+        FROM players
+        WHERE user_id=$1
+        `,
+      [senderUserId]
+    );
+
+  const senderPlayerId =
+    sender.rows[0].id;
+
+  const connection_status = await db.query(
+    `
+    SELECT *
+    FROM player_connections
+    WHERE
+
+    (
+        (
+            sender_player_id = $1
+            AND receiver_player_id = $2
+        )
+
+        OR
+
+        (
+            sender_player_id = $2
+            AND receiver_player_id = $1
+        )
+    )
+
+    AND status='accepted'
+    `,
+    [senderPlayerId, receiverPlayerId]
+  );
+
+  if (connection_status.rows.length === 0) {
+    return res.status(403).json({
+      success: false,
+      message: "Players are not connected"
+    });
+  }
+
+  const result =
+    await db.query(
+      `
+        INSERT INTO player_messages
+        (
+        sender_player_id,
+        receiver_player_id,
+        message
+        )
+        VALUES($1,$2,$3)
+        RETURNING *
+        `,
+      [
+        senderPlayerId,
+        receiverPlayerId,
+        message
+      ]
+    );
+
+    io.to(`player-${receiverPlayerId}`).emit(
+      "playerChat",
+        result.rows[0]
+    )
+
+  res.json({
+    success: true,
+    message:
+      result.rows[0]
+  });
 });
 
 server.listen(PORT, () => {

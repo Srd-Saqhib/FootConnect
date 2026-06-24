@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../styles/profile.css";
-import axios from "axios";
+import api from "../api";
 import PlaceIcon from '@mui/icons-material/Place';
 import EventIcon from "@mui/icons-material/Event";
 import DescriptionIcon from "@mui/icons-material/Description";
@@ -22,7 +22,7 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
   useEffect(() => {
     async function getPlayer() {
       try {
-        const res = await axios.get(`/api/player/${user.id}`);
+        const res = await api.get(`/api/club/players/${user.id}`);
         setFetchPlayer(res.data.players);
       } catch (error) {
         console.log(error);
@@ -58,7 +58,7 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
 
   async function fetchProfileStats() {
     try {
-      const res = await axios.get("/api/profile/stats", {
+      const res = await api.get("/api/profile/stats", {
         params: {
           userId: user.id
         }
@@ -73,7 +73,7 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
   async function updateDescription() {
     try {
 
-      await axios.put("/api/club/description", {
+      await api.put("/api/club/description", {
         userId: user.id,
         description
       });
@@ -97,7 +97,7 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
   async function updateBio() {
     try {
 
-      await axios.put("/api/player/bio", {
+      await api.put("/api/player/bio", {
         userId: user.id,
         bio
       });

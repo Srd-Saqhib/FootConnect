@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "../styles/Home.css";
-import axios from "axios";
+import api from "../api";
 
 function UpdateResultModal({ match, onClose, fetchFixtures, refreshTournament, tournament, setToast }) {
 
@@ -20,7 +20,7 @@ function UpdateResultModal({ match, onClose, fetchFixtures, refreshTournament, t
         }
 
         try {
-            await axios.post("/api/tournament/matchResult", {
+            await api.post("/api/tournament/matchResult", {
                 match,
                 tournamentId: tournament.id,
                 team1Score,

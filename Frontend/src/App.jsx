@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Header from "./components/Header";
 import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./pages/Home";
@@ -11,6 +12,8 @@ import Community from "./pages/Community";
 import Profile from "./pages/Profile";
 import "./App.css";
 import TournamentDetails from "./pages/TournamentDetails";
+import ClubProfile from "./pages/ClubProfile";
+import PlayerProfile from "./pages/PlayerProfile";
 import Toast from "./components/toast";
 
 function App() {
@@ -20,6 +23,8 @@ function App() {
   const [showRegister, setShowRegister] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState(null);
+  const [selectedClub, setSelectedClub] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [toast, setToast] = useState({
     message: "",
     type: ""
@@ -41,6 +46,14 @@ function App() {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  function openClub(clubId) {
+    setSelectedClub(clubId);
+  }
+
+  function openPlayer(playerId) {
+    setSelectedPlayer(playerId);
   }
 
   return (
@@ -90,6 +103,13 @@ function App() {
         setCurrentPage={setCurrentPage}
       />
 
+      <Sidebar
+        currentUser={currentUser}
+        openClub={openClub}
+        openPlayer={openPlayer}
+        setToast={setToast}
+      />
+
       {currentPage === "home" &&
         (selectedTournament ? (
           <TournamentDetails
@@ -107,15 +127,58 @@ function App() {
           />
         ))
       }
-      {currentPage === "clubs" && <Clubs currentUser={currentUser} />}
+      {currentPage === "clubs" &&
+        (selectedClub ? (
+          <ClubProfile
+            clubId={selectedClub}
+            currentUser={currentUser}
+            setCurrentUser={setCurrentUser}
+            onBack={() => setSelectedClub(null)}
+            openLogin={() => setShowLogin(true)}
+            setToast={setToast}
+          />
+        ) : (
+          <Clubs
+            currentUser={currentUser}
+            openClub={openClub}
+          />
+        ))
+      }
       {currentPage === "news" && <News />}
-      {currentPage === "community" && <Community currentUser={currentUser} openLogin={() => setShowLogin(true)} />}
+      {currentPage === "community" &&
+        (
+          selectedClub ?
+            <ClubProfile
+              clubId={selectedClub}
+              currentUser={currentUser}
+              setCurrentUser={setCurrentUser}
+              onBack={() => setSelectedClub(null)}
+              openLogin={() => setShowLogin(true)}
+              setToast={setToast}
+            />
+            :
+            selectedPlayer ?
+              <PlayerProfile
+                playerId={selectedPlayer}
+                currentUser={currentUser}
+                onBack={() => setSelectedPlayer(null)}
+                openClub={openClub}
+              />
+              :
+              <Community
+                currentUser={currentUser}
+                openLogin={() => setShowLogin(true)}
+                openClub={openClub}
+                openPlayer={openPlayer}
+              />
+        )}
+
       {currentPage === "profile" &&
         <Profile user={currentUser}
           logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }}
           ssr={() => setShowRegister(true)}
-          ssl={() => setShowLogin(true)} 
-          setToast={setToast}/>
+          ssl={() => setShowLogin(true)}
+          setToast={setToast} />
       }
 
       <Toast

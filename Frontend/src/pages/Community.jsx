@@ -3,7 +3,7 @@ import Button from "@mui/material/Button";
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import axios from "axios";
+import api from "../api";
 import "../styles/Community.css";
 import Toast from "../components/toast";
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -25,6 +25,7 @@ function Community(props) {
   const [commentSection, setCommentSection] = useState([]);
   const [commentMenu, setCommentMenu] = useState(null);
   const [editingCommentId, setEditingCommentId] = useState(null);
+  const [feed, setFeed] = useState("general");
 
   function displayArea() {
     if (showInput) {
@@ -35,12 +36,12 @@ function Community(props) {
   }
 
   useEffect(() => {
-    getPosts();
-  }, []);
+    refreshFeed();
+  }, [feed]);
 
   async function getPosts() {
     try {
-      const res = await axios.get("/api/posts", {
+      const res = await api.get("/api/posts", {
         params: {
           userId: props.currentUser?.id
         }
@@ -52,6 +53,45 @@ function Community(props) {
       }
     } catch (err) {
       console.error("Failed to load posts", err);
+    }
+  }
+
+  async function getFollowingPosts() {
+    try {
+      const res = await api.get(
+        `/api/posts/following/${props.currentUser.id}`
+      );
+      if (res.data.success) {
+        setPosts(res.data.posts);
+      }
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+
+  async function getMyPosts() {
+    try {
+      const res = await api.get(
+        `/api/posts/me/${props.currentUser.id}`
+      );
+
+      setPosts(res.data.posts);
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+
+  function refreshFeed() {
+    if (feed === "general") {
+      getPosts();
+    }
+    else if (feed === "following") {
+      getFollowingPosts();
+    }
+    else {
+      getMyPosts();
     }
   }
 
@@ -67,7 +107,7 @@ function Community(props) {
     }
 
     if (editingPostId) {
-      await axios.post("/api/post/edit", {
+      await api.post("/api/post/edit", {
         postId: editingPostId,
         value: inputContent.trim(),
         userId: props.currentUser.id
@@ -83,9 +123,9 @@ function Community(props) {
       }, 3000)
 
       setEditingPostId(null);
-      getPosts();
+      refreshFeed();
     } else {
-      await axios.post("/api/posts", {
+      await api.post("/api/posts", {
         userId: props.currentUser.id,
         content: inputContent.trim()
       });
@@ -101,7 +141,7 @@ function Community(props) {
     }
 
     setInputContent("");
-    getPosts();
+    refreshFeed();
     setShowInput(false);
   }
 
@@ -114,7 +154,7 @@ function Community(props) {
 
   async function deletePost(postID) {
     try {
-      await axios.post("/api/post/delete", {
+      await api.post("/api/post/delete", {
         postId: postID,
         userId: props.currentUser.id
       });
@@ -128,7 +168,7 @@ function Community(props) {
         setToast({ message: "", type: "" });
       }, 3000);
 
-      getPosts();
+      refreshFeed();
     }
     catch (error) {
       console.log(error);
@@ -137,11 +177,11 @@ function Community(props) {
 
   async function addLike(postId) {
     try {
-      const res = await axios.post("/api/post/addlike", {
+      const res = await api.post("/api/post/addlike", {
         postId: postId,
         userId: props.currentUser.id
       })
-      getPosts();
+      refreshFeed();
     }
     catch (error) {
       console.log(error);
@@ -155,7 +195,7 @@ function Community(props) {
       }
 
       if (editingCommentId) {
-        await axios.post("/api/post/comment/edit", {
+        await api.post("/api/post/comment/edit", {
           commentId: editingCommentId,
           content: comment,
           userId: props.currentUser.id
@@ -164,7 +204,7 @@ function Community(props) {
         setEditingCommentId(null);
         setComment("");
         await fetchComment(postId);
-        await getPosts();
+        await refreshFeed();
         setCommentMenu(null);
         setToast({
           message: "Comment updated successfully",
@@ -175,14 +215,14 @@ function Community(props) {
           setToast({ message: "", type: "" });
         }, 3000)
       } else {
-        await axios.post("/api/post/addComment", {
+        await api.post("/api/post/addComment", {
           userId: props.currentUser.id,
           postId: postId,
           content: value
         });
         setComment("");
         await fetchComment(postId);
-        await getPosts();
+        await refreshFeed();;
       }
     } catch (error) {
       console.log(error);
@@ -191,7 +231,7 @@ function Community(props) {
 
   async function fetchComment(postId) {
     try {
-      const result = await axios.get(`/api/post/comments/${postId}`);
+      const result = await api.get(`/api/post/comments/${postId}`);
       setCommentSection(result.data.comment);
     }
     catch (error) {
@@ -207,14 +247,14 @@ function Community(props) {
 
   async function deleteComment(commentId, postId) {
     try {
-      await axios.post("/api/post/comment/delete", {
+      await api.post("/api/post/comment/delete", {
         commentId,
         postId,
         userId: props.currentUser.id
       });
       setCommentMenu(null);
       await fetchComment(postId);
-      await getPosts();
+      await refreshFeed();;
     }
     catch (error) {
       console.log(error);
@@ -225,21 +265,73 @@ function Community(props) {
     <div className="community-page">
       <h1 className="page-title">Community</h1>
 
+      <div className="community-tabs">
+
+        <button
+          className={feed === "general" ? "active" : ""}
+          onClick={() => setFeed("general")}
+        >
+          General
+        </button>
+
+        <button
+          className={feed === "following" ? "active" : ""}
+          onClick={() => setFeed("following")}
+        >
+          Following
+        </button>
+
+        <button
+          className={feed === "mine" ? "active" : ""}
+          onClick={() => setFeed("mine")}
+        >
+          My Posts
+        </button>
+
+      </div>
+
       <div className="community-feed">
         {posts.length === 0 ? (
 
           <div className="empty-feed">
 
             <div className="empty-feed-icon">
-              🌍
+
+              {
+                feed === "general"
+                  ? "🌍"
+                  : feed === "following"
+                    ? "👥"
+                    : "📝"
+              }
+
             </div>
 
-            <h2>No Community Posts Yet</h2>
+            <h2>
+
+              {
+                feed === "general"
+                  ? "No Community Posts Yet"
+                  : feed === "following"
+                    ? "No Posts From Followed Clubs"
+                    : "No Posts Yet"
+              }
+
+            </h2>
 
             <p>
 
-              Be the first member to share an update,
-              celebrate a victory, or start a football discussion.
+              {
+                feed === "general"
+
+                  ? "Be the first member to share an update, celebrate a victory, or start a football discussion."
+
+                  : feed === "following"
+
+                    ? "Follow other clubs to see their latest posts here."
+
+                    : "Create your first post and share it with the football community."
+              }
 
             </p>
 
@@ -252,7 +344,21 @@ function Community(props) {
                 <div className="post-avatar">
                   {post.user?.charAt(0)}
                 </div>
-                <div>
+                <div onClick={() => {
+
+                  if (post.role === "club" && post.club_id) {
+
+                    props.openClub(post.club_id);
+
+                  }
+
+                  if (post.role === "player" && post.player_id) {
+
+                    props.openPlayer(post.player_id);
+
+                  }
+
+                }}>
                   <h4 className="post-user">{post.user}</h4>
                   <span className="post-time">{new Date(post.created_at).toLocaleString()}</span>
                 </div>
@@ -271,7 +377,7 @@ function Community(props) {
                       onClick={() => setPostMenu(null)}
                     />
 
-                    {post.user_id === props.currentUser?.id ? (
+                    {post.user_id === props.currentUser?.id &&
                       <div className="postMenu">
                         <button onClick={() => editPost(post)}>
                           Edit
@@ -281,13 +387,7 @@ function Community(props) {
                           Delete
                         </button>
                       </div>
-                    ) : (
-                      <div className="postMenu">
-                        <button onClick={() => reportPost(post.id)}>
-                          Report
-                        </button>
-                      </div>
-                    )}
+                    }
                   </>
                 )}
 

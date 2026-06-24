@@ -1,0 +1,478 @@
+.club-profile {
+    width: min(1100px, 92%);
+    margin: 35px auto 60px;
+}
+
+/* ---------------- BACK BUTTON ---------------- */
+
+.back-btn {
+    background: #1F3897;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 22px;
+    transition: .2s;
+}
+
+.back-btn:hover {
+    background: #162c77;
+}
+
+/* ---------------- HEADER ---------------- */
+
+.profile-header {
+
+    display: flex;
+    align-items: center;
+    gap: 28px;
+
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 18px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .06);
+
+    margin-bottom: 20px;
+}
+
+.club-avatar {
+
+    width: 110px;
+    height: 110px;
+
+    border-radius: 50%;
+
+    background: #eef2ff;
+
+    color: #1F3897;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 52px;
+
+    flex-shrink: 0;
+}
+
+.club-info {
+
+    flex: 1;
+}
+
+.club-info h1 {
+
+    margin-bottom: 15px;
+
+    color: #000000;
+
+    font-size: 2rem;
+}
+
+.club-meta {
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.club-meta span {
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #6b7280;
+
+    font-size: 15px;
+}
+
+/* ---------------- STATS ---------------- */
+.club-stats {
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 28px;
+}
+
+.stat-card {
+
+    background: white;
+
+    border-radius: 14px;
+
+    padding: 20px;
+
+    text-align: center;
+
+    border: 1px solid #edf2f7;
+
+    transition: .25s;
+}
+
+.stat-card:hover {
+
+    transform: translateY(-4px);
+
+    border-color: #1F3897;
+}
+
+.stat-card h2 {
+    color: #1F3897;
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* ---------------- SECTIONS ---------------- */
+
+.club-section {
+
+    background: white;
+
+    border-radius: 18px;
+
+    border: 1px solid #e5e7eb;
+
+    padding: 24px;
+
+    margin-bottom: 22px;
+}
+
+.club-section h2 {
+
+    color: #1F3897;
+
+    margin-bottom: 18px;
+}
+
+.club-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    margin: 25px 0;
+
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 8px;
+
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+}
+
+.club-tabs button {
+
+    flex: 1;
+
+    padding: 14px 0;
+
+    border: none;
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #6b7280;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+.club-tabs button:hover {
+
+    background: #f3f4f6;
+    color: #1F3897;
+}
+
+.club-tabs button.active-tab {
+
+    background: #1F3897;
+    color: white;
+
+    box-shadow: 0 6px 14px rgba(31, 56, 151, .25);
+}
+
+
+
+/* ---------------- PLAYER ---------------- */
+
+.player-card {
+
+    display: flex;
+    gap: 18px;
+
+    align-items: flex-start;
+
+    padding: 18px;
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    transition: .25s;
+}
+
+.player-card:hover {
+
+    transform: translateY(-3px);
+
+    border-color: #1F3897;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .06);
+}
+
+
+.player-details {
+
+    flex: 1;
+}
+
+.player-details h3 {
+
+    margin-bottom: 8px;
+}
+
+.player-position {
+
+    display: inline-block;
+
+    background: #1F3897;
+
+    color: white;
+
+    padding: 4px 12px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    margin-bottom: 10px;
+}
+
+.player-details p {
+
+    color: #6b7280;
+
+    margin-top: 10px;
+
+    line-height: 1.5;
+}
+
+/* ---------------- TOURNAMENT ---------------- */
+
+.tournament-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    background: #fff;
+
+    border-left: 5px solid #1F3897;
+
+    padding: 22px;
+
+    border-radius: 14px;
+
+    transition: .25s;
+}
+
+.tournament-card h3 {
+    color: #111827;
+    font-size: 20px;
+}
+
+.tournament-card p {
+    margin: 0;
+    color: #6b7280;
+}
+
+.tournament-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
+}
+
+/* ---------------- FRIENDLY ---------------- */
+
+.friendly-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    background: #fff;
+
+    border-left: 5px solid #22c55e;
+
+    padding: 22px;
+
+    border-radius: 14px;
+
+    transition: .25s;
+}
+
+.friendly-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
+}
+
+.friendly-card h3 {
+
+    margin-bottom: 8px;
+
+    color: #111827;
+}
+
+.friendly-card p {
+
+    margin: 5px 0;
+
+    color: #6b7280;
+}
+
+.profile-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin: 20px 0;
+}
+
+.profile-btn {
+
+    background: #1F3897;
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 28px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    transition: .25s;
+}
+
+.profile-btn:hover {
+
+    background: #162d7a;
+}
+
+.profile-btn.disabled {
+
+    background: #9ca3af;
+
+    cursor: not-allowed;
+}
+
+.club-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.player-card {
+    margin-bottom: 15px;
+}
+
+.member-actions{
+
+    display:flex;
+
+    gap:12px;
+
+    justify-content:flex-end;
+}
+
+.leave-btn{
+
+    background:#dc2626;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 24px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-weight:600;
+
+    transition:.25s;
+}
+
+.leave-btn:hover{
+
+    background:#b91c1c;
+}
+
+/* ---------------- MOBILE ---------------- */
+
+@media(max-width:900px) {
+
+    .club-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media(max-width:600px) {
+
+    .club-profile {
+        width: 95%;
+    }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px;
+    }
+
+    .profile-header h1 {
+        font-size: 1.7rem;
+    }
+
+    .club-avatar {
+        width: 90px;
+        height: 90px;
+        font-size: 40px;
+    }
+
+    .club-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .club-meta {
+        justify-content: center;
+    }
+
+}

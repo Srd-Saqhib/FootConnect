@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api";
 import Card from "../components/Cd";
 import "../styles/Home.css";
 import FriendlyCard from "../components/FriendlyCard";
@@ -18,7 +18,7 @@ function Home(props) {
 
   async function fetchFriendlies() {
     try {
-      const res = await axios.get("/api/friendly");
+      const res = await api.get("/api/friendly");
       setFriendlyMatches(res.data.matches);
     }
     catch (error) {
@@ -28,7 +28,7 @@ function Home(props) {
 
   async function fetchTournament() {
     try {
-      const res = await axios.get("/api/tournament");
+      const res = await api.get("/api/tournament");
       setTournamentMatches(res.data.tournaments);
     }
     catch (error) {
@@ -39,7 +39,7 @@ function Home(props) {
   async function fetchStats() {
     try {
 
-      const res = await axios.get("/api/home/stats");
+      const res = await api.get("/api/home/stats");
 
       setStats(res.data);
 

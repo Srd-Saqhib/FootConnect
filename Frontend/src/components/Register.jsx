@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../styles/login.css";
-import axios from "axios";
+import api from "../api";
 
 
 function Register(props) {
@@ -56,7 +56,7 @@ const [district, setDistrict] = useState("");
 
 
     try {
-      const res = await axios.post("/api/register", {
+      const res = await api.post("/api/register", {
         role,
         name,
         email: email.trim(),

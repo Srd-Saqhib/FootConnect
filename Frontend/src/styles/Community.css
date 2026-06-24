@@ -370,3 +370,42 @@
 
     line-height:1.8;
 }
+
+.community-tabs{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:12px;
+
+    margin:25px 0;
+}
+
+.community-tabs button{
+
+    padding:12px 28px;
+
+    border:none;
+
+    border-radius:999px;
+
+    background:white;
+
+    color:#64748b;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.community-tabs button.active{
+
+    background:#1F3897;
+
+    color:white;
+
+    box-shadow:0 8px 18px rgba(31,56,151,.25);
+}
