@@ -10,11 +10,14 @@ import { Server } from "socket.io";
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
+const io = new Server(server,{
+    cors:{
+        origin:[
+            "http://localhost:5173",
+            "https://foot-connect-c9jqp83n5-saqhib.vercel.app"
+        ],
+        credentials:true
+    }
 });
 
 const PORT = process.env.PORT || 4000;
@@ -55,7 +58,13 @@ const db = new Pool({
   },
 });
 
-app.use(cors());
+app.use(cors({
+    origin:[
+        "http://localhost:5173",
+        "https://foot-connect-c9jqp83n5-saqhib.vercel.app"
+    ],
+    credentials:true
+}));
 app.use(express.json());
 
 const BRACKETS = {
