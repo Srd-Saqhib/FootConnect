@@ -6,7 +6,9 @@ import MessageIcon from "@mui/icons-material/Message";
 import CancelIcon from "@mui/icons-material/Cancel";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 
-const socket = io(import.meta.env.VITE_API_URL);
+const socket = io(
+  import.meta.env.VITE_SOCKET_URL
+);
 
 function Sidebar(props) {
     const [showWindow, setShowWindow] = useState(false);
