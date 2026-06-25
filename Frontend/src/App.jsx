@@ -141,6 +141,7 @@ function App() {
           <Clubs
             currentUser={currentUser}
             openClub={openClub}
+            setToast={setToast}
           />
         ))
       }

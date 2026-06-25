@@ -27,7 +27,7 @@ function Clubs(props) {
   const [endDate, setEndDate] = useState("");
   const [maxTeams, setMaxTeams] = useState("");
   const [tournamentDescription, setTournamentDescription] = useState("");
-  
+
 
   useEffect(() => {
     if (props.currentUser) {
@@ -97,7 +97,13 @@ function Clubs(props) {
       setDescription("");
       setOpponentClub("");
 
-      alert("Friendly request sent!");
+      props.setToast({
+        message: "Friendly request sent!",
+        type: "success"
+      });
+      setTimeout(() => {
+        props.setToast({ message: "", type: "" });
+      }, 3000)
     }
     catch (error) {
       console.log(error.response?.data);
@@ -118,7 +124,13 @@ function Clubs(props) {
         maxTeams
       });
 
-      alert("Tournament created!");
+      props.setToast({
+        message: "Tournament created!",
+        type: "success"
+      });
+      setTimeout(() => {
+        props.setToast({ message: "", type: "" });
+      }, 3000)
       setModalType(null);
       setTournamentTitle("");
       setTournamentLocation("");

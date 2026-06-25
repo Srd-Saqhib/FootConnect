@@ -1074,8 +1074,8 @@ app.post("/api/club/follow", async (req, res) => {
     if (existing.rows.length > 0) {
       await db.query(
         `DELETE FROM club_follows
-     WHERE follower_club_id=$1
-     AND followed_club_id=$2`,
+        WHERE follower_club_id=$1
+        AND followed_club_id=$2`,
         [followerClubId, clubId]
       );
 
@@ -1087,9 +1087,40 @@ app.post("/api/club/follow", async (req, res) => {
 
     await db.query(
       `INSERT INTO club_follows
-   (follower_club_id, followed_club_id)
-   VALUES ($1,$2)`,
+      (follower_club_id, followed_club_id)
+      VALUES ($1,$2)`,
       [followerClubId, clubId]
+    );
+
+    const targetClub = await db.query(
+      `SELECT user_id, club_name
+      FROM clubs
+      WHERE id = $1`,
+          [clubId]
+        );
+
+        const myClubName = await db.query(
+          `SELECT club_name
+      FROM clubs
+      WHERE id = $1`,
+      [followerClubId]
+    );
+
+    await db.query(
+      `INSERT INTO notifications
+      (
+          user_id,
+          actor_user_id,
+          type,
+          message
+      )
+      VALUES($1,$2,$3,$4)`,
+      [
+        targetClub.rows[0].user_id,
+        userId,
+        "club_follow",
+        `${myClubName.rows[0].club_name} started following your club`
+      ]
     );
 
     res.json({
@@ -1134,6 +1165,18 @@ app.post("/api/club/unfollow", async (req, res) => {
         followerClub,
         clubId
       ]
+    );
+
+    await db.query(
+      `DELETE FROM notifications
+        WHERE type = 'club_follow'
+        AND actor_user_id = $1
+        AND user_id = (
+            SELECT user_id
+            FROM clubs
+            WHERE id = $2
+        )`,
+      [userId, clubId]
     );
 
     res.json({
@@ -2526,12 +2569,12 @@ app.get("/api/posts/following/:userId", async (req, res) => {
 });
 
 //search a player
-app.get("/api/player/search", async(req,res)=>{
+app.get("/api/player/search", async (req, res) => {
 
-    const {name} = req.query;
+  const { name } = req.query;
 
-    const result = await db.query(
-      `
+  const result = await db.query(
+    `
       SELECT
         id,
         player_name,
@@ -2540,13 +2583,13 @@ app.get("/api/player/search", async(req,res)=>{
       WHERE LOWER(player_name)
       LIKE LOWER($1)
       `,
-      [`%${name}%`]
-    );
+    [`%${name}%`]
+  );
 
-    res.json({
-      success:true,
-      players:result.rows
-    });
+  res.json({
+    success: true,
+    players: result.rows
+  });
 
 });
 
