@@ -575,3 +575,104 @@
     transform: scale(1);
   }
 }
+
+/* ================= MOBILE ================= */
+
+@media(max-width:768px){
+
+  .profile-page{
+    padding:20px 15px 40px;
+  }
+
+  .profile-header-card{
+    padding:20px;
+  }
+
+  .profile-left{
+    flex-direction:column;
+    text-align:center;
+    gap:18px;
+  }
+
+  .profile-details{
+    align-items:center;
+  }
+
+  .profile-meta{
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .current-club{
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .profile-stats,
+  .player-stats{
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+  }
+
+  .cardSec{
+    flex-direction:column;
+  }
+
+  .cardSec button{
+    width:100%;
+  }
+
+  .club-info-row{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:8px;
+  }
+
+  .player-row{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+  .logout-btn{
+    width:100%;
+    margin-top:25px;
+  }
+
+  .popup-actions{
+    flex-direction:column;
+  }
+
+  .popup-actions button{
+    width:100%;
+  }
+
+}
+
+@media(max-width:480px){
+
+  .profile-name{
+    font-size:20px;
+  }
+
+  .profile-avatar{
+    width:70px;
+    height:70px;
+    font-size:26px;
+  }
+
+  .profile-stats strong,
+  .player-stats strong{
+    font-size:18px;
+  }
+
+  .description-popup{
+    padding:18px;
+  }
+
+  .logout-modal{
+    padding:20px;
+  }
+
+}

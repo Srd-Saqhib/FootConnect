@@ -399,3 +399,68 @@
         flex-direction:column;
     }
 }
+
+@media(max-width:768px){
+
+    .player-profile{
+        width:95%;
+        margin:20px auto 40px;
+    }
+
+    .player-header{
+        padding:24px 18px;
+    }
+
+    .player-avatar{
+        width:90px;
+        height:90px;
+    }
+
+    .player-info h1{
+        font-size:1.6rem;
+    }
+
+    .player-meta{
+        flex-direction:column;
+        align-items:center;
+        gap:10px;
+    }
+
+    .profile-actions{
+        justify-content:center;
+    }
+
+    .profile-btn{
+        width:100%;
+    }
+
+    .player-post{
+        padding:14px;
+    }
+
+}
+
+@media(max-width:480px){
+
+    .player-info h1{
+        font-size:1.4rem;
+    }
+
+    .player-avatar{
+        width:75px;
+        height:75px;
+    }
+
+    .player-meta span{
+        font-size:13px;
+    }
+
+    .stat-card{
+        padding:16px;
+    }
+
+    .stat-card h2{
+        font-size:22px;
+    }
+
+}

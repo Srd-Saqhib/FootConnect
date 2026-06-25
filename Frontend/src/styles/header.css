@@ -25,3 +25,48 @@
   border: 1px solid whitesmoke;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+
+  .headstyle {
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 15px;
+    text-align: center;
+  }
+
+  .headstyle h1 {
+    font-size: 24px;
+    margin: 0;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-head1,
+  .btn-head2 {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .btn-head2 {
+    margin-left: 0;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .headstyle h1 {
+    font-size: 20px;
+  }
+
+  .btn-head1,
+  .btn-head2 {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+}

@@ -397,3 +397,108 @@
 
     text-align:center;
 }
+
+/* ================= MOBILE ================= */
+
+@media(max-width:768px){
+
+  .clubs-page{
+
+    padding:20px 14px;
+  }
+
+  .page-title{
+
+    font-size:22px;
+
+    margin-top:30px;
+
+    margin-bottom:16px;
+  }
+
+  .club-actions{
+
+    grid-template-columns:1fr;
+  }
+
+  .action-card{
+
+    padding:16px;
+  }
+
+  .clubs-grid{
+
+    grid-template-columns:1fr;
+  }
+
+  .club-box{
+
+    padding:16px;
+  }
+
+  .club-header{
+
+    flex-direction:column;
+
+    align-items:flex-start;
+
+    gap:8px;
+  }
+
+  .club-header h3{
+
+    font-size:17px;
+  }
+
+}
+
+@media(max-width:768px){
+
+  .friendly-modal{
+
+    width:95vw;
+
+    max-height:85vh;
+
+    overflow-y:auto;
+
+    padding:18px;
+  }
+
+  .form-row{
+
+    flex-direction:column;
+
+    gap:0;
+  }
+
+  .modal-actions{
+
+    flex-direction:column;
+  }
+
+  .modal-actions button{
+
+    width:100%;
+  }
+
+}
+
+@media(max-width:480px){
+
+  .page-title{
+
+    font-size:20px;
+  }
+
+  .club-box{
+
+    padding:14px;
+  }
+
+  .action-card h3{
+
+    font-size:18px;
+  }
+
+}

@@ -218,7 +218,7 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub }) {
 
             </div>
 
-            <div className="club-tabs">
+            <div className="player-tabs">
 
                 <button
                     className={activeTab === "posts" ? "active-tab" : ""}

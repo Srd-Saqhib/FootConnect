@@ -1,17 +1,45 @@
-.navstyle{
+.navbox {
+  padding: 8px 0;
+  margin-bottom: 0;
+}
+
+.navstyle {
   display: flex;
   justify-content: center;
-  text-align: center;
+  align-items: center;
   gap: 90px;
   list-style: none;
 }
 
-.navstyle li:hover{
-    transform: scale(1.1);
+.navstyle li {
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-.navbox{
-  
-  padding: 5px;
-  margin-bottom: 0;
+.navstyle li:hover {
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+
+  .navbox {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .navbox::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navstyle {
+    gap: 25px;
+    padding: 0 15px;
+    min-width: max-content;
+  }
+
+  .navstyle li {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
 }

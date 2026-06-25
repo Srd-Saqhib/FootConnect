@@ -35,77 +35,77 @@
     background-color: #fff;
 }
 
-.stats{
-    margin-top:40px;
+.stats {
+    margin-top: 40px;
 
-    padding:28px;
+    padding: 28px;
 
-    background:white;
+    background: white;
 
-    border-radius:18px;
+    border-radius: 18px;
 
-    border:1px solid #e8eef7;
+    border: 1px solid #e8eef7;
 
-    box-shadow:0 10px 24px rgba(0,0,0,.06);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .06);
 }
 
-.stats h3{
-    font-size:28px;
-    color:#1F3897;
-    font-weight:700;
+.stats h3 {
+    font-size: 28px;
+    color: #1F3897;
+    font-weight: 700;
 
-    margin-bottom:25px;
+    margin-bottom: 25px;
 }
 
-.statgroup{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+.statgroup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 
-    gap:22px;
+    gap: 22px;
 }
 
-.sbox{
-    background:linear-gradient(145deg,#f7faff,#eef4ff);
+.sbox {
+    background: linear-gradient(145deg, #f7faff, #eef4ff);
 
-    border:1px solid #dbe7ff;
+    border: 1px solid #dbe7ff;
 
-    border-radius:17px;
+    border-radius: 17px;
 
-    padding:28px 20px;
+    padding: 28px 20px;
 
-    text-align:center;
+    text-align: center;
 
-    transition:.25s ease;
+    transition: .25s ease;
 
-    cursor:default;
+    cursor: default;
 }
 
-.sbox:hover{
-    transform:translateY(-6px);
+.sbox:hover {
+    transform: translateY(-6px);
 
-    box-shadow:0 14px 28px rgba(31,56,151,.12);
+    box-shadow: 0 14px 28px rgba(31, 56, 151, .12);
 
-    border-color:#bcd0ff;
+    border-color: #bcd0ff;
 }
 
-.sbox h2{
-    font-size:35px;
+.sbox h2 {
+    font-size: 35px;
 
-    color:#1F3897;
+    color: #1F3897;
 
-    font-weight:650;
+    font-weight: 650;
 
-    margin-bottom:10px;
+    margin-bottom: 10px;
 }
 
-.sbox p{
-    color:#64748b;
+.sbox p {
+    color: #64748b;
 
-    font-size:15px;
+    font-size: 15px;
 
-    font-weight:600;
+    font-weight: 600;
 
-    letter-spacing:.3px;
+    letter-spacing: .3px;
 }
 
 
@@ -1018,7 +1018,7 @@
     align-items: center;
 }
 
-.fixture-side h4{
+.fixture-side h4 {
     font-size: 22px;
     font-weight: 500;
     color: #374151;
@@ -1032,20 +1032,20 @@
     gap: 30px;
 }
 
-.score{
-    width:24px;
-    text-align:center;
-    font-size:24px;
-    font-weight:700;
+.score {
+    width: 24px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 700;
 }
 
-.vs{
+.vs {
     font-size: 18px;
     font-weight: 600;
     color: #64748b;
 }
 
-.champion-card{
+.champion-card {
     margin: 24px 0;
     padding: 22px 28px;
 
@@ -1053,19 +1053,19 @@
     align-items: center;
     gap: 20px;
 
-    background: linear-gradient(135deg,#1F3897,#3558d4);
+    background: linear-gradient(135deg, #1F3897, #3558d4);
     color: white;
 
     border-radius: 18px;
-    box-shadow: 0 10px 24px rgba(31,56,151,.25);
+    box-shadow: 0 10px 24px rgba(31, 56, 151, .25);
 }
 
-.champion-icon{
+.champion-icon {
     font-size: 48px;
     line-height: 1;
 }
 
-.champion-label{
+.champion-label {
     margin: 0;
     font-size: 14px;
     letter-spacing: 1px;
@@ -1073,7 +1073,7 @@
     opacity: .85;
 }
 
-.champion-name{
+.champion-name {
     margin-top: 6px;
     margin-bottom: 0;
 
@@ -1254,56 +1254,227 @@
 
 /* ---------- EMPTY STATES ---------- */
 
-.empty-section{
+.empty-section {
 
-    width:100%;
+    width: 100%;
 
-    min-height:240px;
+    min-height: 240px;
 
-    background:white;
+    background: white;
 
-    border-radius:18px;
+    border-radius: 18px;
 
-    border:2px  #d7e3ff;
+    border: 2px #d7e3ff;
 
-    display:flex;
+    display: flex;
 
-    flex-direction:column;
+    flex-direction: column;
 
-    justify-content:center;
+    justify-content: center;
 
-    align-items:center;
+    align-items: center;
 
-    text-align:center;
+    text-align: center;
 
-    padding:40px;
+    padding: 40px;
 
-    color:#64748b;
+    color: #64748b;
 
-    box-shadow:0 8px 20px rgba(0,0,0,.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .05);
 }
 
-.empty-icon{
+.empty-icon {
 
-    font-size:64px;
+    font-size: 64px;
 
-    margin-bottom:18px;
+    margin-bottom: 18px;
 }
 
-.empty-section h3{
+.empty-section h3 {
 
-    color:#1F3897;
+    color: #1F3897;
 
-    font-size:26px;
+    font-size: 26px;
 
-    margin-bottom:10px;
+    margin-bottom: 10px;
 }
 
-.empty-section p{
+.empty-section p {
 
-    max-width:450px;
+    max-width: 450px;
 
-    line-height:1.7;
+    line-height: 1.7;
 
-    font-size:15px;
+    font-size: 15px;
+}
+
+@media (max-width:768px) {
+
+    .home {
+        padding: 16px;
+    }
+
+    .title {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .home-title {
+        font-size: 24px;
+        line-height: 1.3;
+    }
+
+    .home-subtitle {
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .friendlies-grid {
+        justify-content: center;
+    }
+
+    .friendly-card,
+    .tournament-card {
+        width: 100%;
+        padding: 18px;
+    }
+
+    .tour-title {
+        font-size: 20px;
+    }
+
+    .stats {
+        padding: 20px;
+    }
+
+    .stats h3 {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .statgroup {
+        grid-template-columns: 1fr;
+    }
+
+    .sbox {
+        max-width: none;
+    }
+
+}
+
+@media (max-width:768px) {
+
+    .tournament-details {
+        padding: 0 12px;
+    }
+
+    .details-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .details-header h1 {
+        font-size: 24px;
+    }
+
+    .details-trophy {
+        font-size: 48px !important;
+    }
+
+    .fixture-teams {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .fixture-team {
+        justify-content: center;
+    }
+
+    .team-name {
+        font-size: 18px;
+        text-align: center;
+    }
+
+    .fixture-vs {
+        width: 55px;
+        height: 55px;
+    }
+
+    .layout-tabs {
+        flex-direction: column;
+    }
+
+}
+
+@media (max-width:768px) {
+
+    .empty-section {
+        min-height: 180px;
+        padding: 24px;
+    }
+
+    .empty-icon {
+        font-size: 48px;
+    }
+
+    .empty-section h3 {
+        font-size: 20px;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fixture-row {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .fixture-center {
+        gap: 15px;
+    }
+
+    .fixture-side h4 {
+        font-size: 18px;
+    }
+
+    .champion-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .champion-name {
+        font-size: 22px;
+    }
+
+    .registration-progress {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .result-modal {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .result-scoreboard {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .result-team input {
+        width: 70px;
+        height: 60px;
+        font-size: 24px;
+    }
+
 }

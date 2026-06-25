@@ -2525,6 +2525,32 @@ app.get("/api/posts/following/:userId", async (req, res) => {
 
 });
 
+//search a player
+app.get("/api/player/search", async(req,res)=>{
+
+    const {name} = req.query;
+
+    const result = await db.query(
+      `
+      SELECT
+        id,
+        player_name,
+        position
+      FROM players
+      WHERE LOWER(player_name)
+      LIKE LOWER($1)
+      `,
+      [`%${name}%`]
+    );
+
+    res.json({
+      success:true,
+      players:result.rows
+    });
+
+});
+
+
 // View player profile
 app.get("/api/player/:id", async (req, res) => {
 

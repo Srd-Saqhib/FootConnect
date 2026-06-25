@@ -476,3 +476,59 @@
     }
 
 }
+
+@media(max-width:768px){
+
+    .club-profile{
+        width:95%;
+        margin:20px auto 40px;
+    }
+
+    .club-tabs{
+        flex-direction:column;
+        gap:8px;
+    }
+
+    .club-tabs button{
+        width:100%;
+    }
+
+    .profile-actions{
+        justify-content:center;
+    }
+
+    .member-actions{
+        flex-direction:column;
+        width:100%;
+    }
+
+    .profile-btn,
+    .leave-btn{
+        width:100%;
+    }
+
+    .club-section{
+        padding:18px;
+    }
+
+    .tournament-card,
+    .friendly-card{
+        padding:16px;
+    }
+
+    .tournament-card h3,
+    .friendly-card h3{
+        font-size:18px;
+    }
+
+}
+
+@media(max-width:600px){
+
+    .club-meta{
+        flex-direction:column;
+        align-items:center;
+        gap:10px;
+    }
+
+}

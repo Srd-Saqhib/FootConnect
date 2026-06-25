@@ -26,6 +26,8 @@ function Community(props) {
   const [commentMenu, setCommentMenu] = useState(null);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [feed, setFeed] = useState("general");
+  const [search, setSearch] = useState("");
+  const [searchedPlayers, setSearchedPlayers] = useState([]);
 
   function displayArea() {
     if (showInput) {
@@ -38,6 +40,24 @@ function Community(props) {
   useEffect(() => {
     refreshFeed();
   }, [feed]);
+
+  useEffect(() => {
+
+    const timer = setTimeout(() => {
+
+      if (search.trim()) {
+        searchPlayers();
+      }
+      else {
+        setSearchedPlayers([]);
+      }
+
+    }, 300);
+
+    return () => clearTimeout(timer);
+
+  }, [search]);
+
 
   async function getPosts() {
     try {
@@ -261,9 +281,88 @@ function Community(props) {
     }
   }
 
+  async function searchPlayers() {
+    if (!search.trim()) {
+      setSearchedPlayers([]);
+      return;
+    }
+
+    try {
+      const res = await api.get(
+        "/api/player/search",
+        {
+          params: {
+            name: search
+          }
+        }
+      );
+      setSearchedPlayers(res.data.players);
+    }
+    catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <div className="community-page">
       <h1 className="page-title">Community</h1>
+
+      <div className="community-search">
+
+        <input
+          value={search}
+          placeholder="Search players..."
+          onChange={(e) => {
+            setSearch(e.target.value);
+          }}
+        />
+
+        <button
+          onClick={searchPlayers}
+        >
+          Search
+        </button>
+
+      </div>
+
+      {
+        searchedPlayers.length > 0 &&
+
+        <div className="search-results">
+          {
+            searchedPlayers.map(player => (
+
+              <div
+                key={player.id}
+                className="search-player-card"
+                onClick={() => {
+                  props.openPlayer(player.id);
+                  setSearch("");
+                  setSearchedPlayers([]);
+                }}
+              >
+
+                <div className="search-avatar">
+                  {player.player_name.charAt(0)}
+                </div>
+
+                <div>
+
+                  <h4>
+                    {player.player_name}
+                  </h4>
+
+                  <p>
+                    {player.position}
+                  </p>
+
+                </div>
+
+              </div>
+            ))
+          }
+        </div>
+      }
 
       <div className="community-tabs">
 

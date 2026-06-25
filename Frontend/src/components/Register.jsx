@@ -12,15 +12,77 @@ function Register(props) {
   const [position, setPosition] = useState("");
   const [error, setError] = useState("");
   const [role, setRole] = useState("player");
- const [userState, setUserState] = useState("");
-const [district, setDistrict] = useState("");
+  const [userState, setUserState] = useState("");
+  const [district, setDistrict] = useState("");
 
 
 
   const regions = {
-    Karnataka: ["Udupi", "Mangalore", "Bangalore", "Mysore"],
-    Kerala: ["Kochi", "Trivandrum", "Calicut"],
-    TamilNadu: ["Chennai", "Coimbatore", "Madurai"]
+
+    Karnataka: [
+      "Bangalore",
+      "Mysore",
+      "Mangalore",
+      "Udupi",
+      "Belgaum",
+      "Hubli",
+      "Dharwad",
+      "Shimoga",
+      "Tumkur",
+      "Bellary"
+    ],
+
+    Kerala: [
+      "Kochi",
+      "Trivandrum",
+      "Calicut",
+      "Thrissur",
+      "Kannur",
+      "Palakkad",
+      "Kollam",
+      "Malappuram"
+    ],
+
+    TamilNadu: [
+      "Chennai",
+      "Coimbatore",
+      "Madurai",
+      "Salem",
+      "Tirunelveli",
+      "Erode",
+      "Trichy",
+      "Vellore"
+    ],
+
+    Maharashtra: [
+      "Mumbai",
+      "Pune",
+      "Nagpur",
+      "Nashik",
+      "Kolhapur",
+      "Aurangabad"
+    ],
+
+    Goa: [
+      "Panaji",
+      "Margao",
+      "Vasco da Gama",
+      "Mapusa"
+    ],
+
+    Telangana: [
+      "Hyderabad",
+      "Warangal",
+      "Karimnagar"
+    ],
+
+    AndhraPradesh: [
+      "Visakhapatnam",
+      "Vijayawada",
+      "Guntur",
+      "Tirupati"
+    ]
+
   };
 
 

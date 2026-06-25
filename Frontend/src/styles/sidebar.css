@@ -902,3 +902,88 @@
     word-break:break-word;
 
 }
+
+@media (max-width:768px){
+
+    .side-window{
+
+        width:100vw;
+        max-width:100vw;
+
+        height:100vh;
+
+        border-radius:0;
+
+        padding:16px;
+
+    }
+
+}
+
+@media (max-width:768px){
+
+    .sidebar-icon-wrapper{
+
+        top:auto;
+        bottom:20px;
+        right:20px;
+
+    }
+
+    .side-window{
+
+        width:100vw;
+        max-width:100vw;
+
+        height:100vh;
+
+        border-radius:0;
+
+        padding:16px;
+
+    }
+
+    .side-title{
+
+        font-size:22px;
+
+    }
+
+    .side-actions{
+
+        gap:8px;
+
+    }
+
+    .side-item{
+
+        padding:10px;
+
+    }
+
+    .side-item span{
+
+        font-size:12px;
+
+    }
+
+    .chat-bubble,
+    .dm-bubble{
+
+        max-width:85%;
+
+    }
+
+    .chat-input{
+
+        padding:10px;
+
+    }
+
+    .chat-input-container{
+
+        padding:10px;
+
+    }
+
+}
