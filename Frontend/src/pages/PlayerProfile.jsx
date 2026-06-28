@@ -7,7 +7,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import GroupsIcon from "@mui/icons-material/Groups";
 
-function PlayerProfile({ playerId, currentUser, onBack, openClub }) {
+function PlayerProfile({ playerId, currentUser, onBack, openClub, setToast }) {
 
     const [playerData, setPlayerData] = useState(null);
     const [activeTab, setActiveTab] = useState("posts");
@@ -31,21 +31,16 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub }) {
         }
 
         catch (err) {
-
             console.log(err);
-
         }
-
     }
 
     if (!playerData) {
-
         return (
             <Loading
                 text="Loading player..."
             />
         );
-
     }
 
     async function connectPlayer() {
@@ -60,6 +55,37 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub }) {
             console.log(err);
         }
     }
+
+    async function invitePlayer() {
+        try {
+            await api.post("/api/player/invite", {
+                clubId: currentUser.user_club_id,
+                playerId: playerData.player.id,
+                userId: currentUser.id
+            });
+            await fetchPlayer();
+
+            setToast({
+                message: "Invitation sent successfully.",
+                type: "success"
+            });
+            setTimeout(() => {
+                setToast({ message: "", type: "" });
+            }, 3000)
+
+        } catch (error) {
+            setToast({
+                message:
+                    error.response?.data?.message ||
+                    "Failed to send invitation.",
+                type: "error"
+            });
+            setTimeout(() => {
+                setToast({ message: "", type: "" });
+            }, 3000)
+        }
+    }
+
     return (
 
         <div className="player-profile">
@@ -170,9 +196,34 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub }) {
 
                             ) : (
 
-                                <button className="profile-btn">
-                                    Invite Player
-                                </button>
+                                playerData.invite_status === "pending" ? (
+
+                                    <button
+                                        className="profile-btn pending"
+                                        disabled
+                                    >
+                                        Invitation Sent
+                                    </button>
+
+                                ) : playerData.invite_status === "accepted" ? (
+
+                                    <button
+                                        className="profile-btn connected"
+                                        disabled
+                                    >
+                                        ✓ Joined Club
+                                    </button>
+
+                                ) : (
+
+                                    <button
+                                        className="profile-btn"
+                                        onClick={invitePlayer}
+                                    >
+                                        Invite Player
+                                    </button>
+
+                                )
 
                             )
                         }

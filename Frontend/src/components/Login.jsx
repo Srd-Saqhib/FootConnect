@@ -14,10 +14,18 @@ function Login(props) {
                 email,
                 password: password.trim()
             });
-
+            
             setError("");
             if (res.data.success) {
-                props.onSuccess && props.onSuccess(res.data.user);
+                try {
+                    const meRes = await api.get("/api/me", {
+                        params: { userId: res.data.user.id }
+                    });
+
+                    props.onSuccess && props.onSuccess(meRes.data.user);
+                } catch (err) {
+                    props.onSuccess && props.onSuccess(res.data.user);
+                }
             }
         } catch (err) {
             setError(

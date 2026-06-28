@@ -6,7 +6,7 @@ import EventIcon from "@mui/icons-material/Event";
 import DescriptionIcon from "@mui/icons-material/Description";
 
 
-function Profile({ user, ssr, ssl, logout, setToast }) {
+function Profile({ user, ssr, ssl, logout, setToast, openClub }) {
   const [clubCard, setClubCard] = useState("status");
   const [fetchPlayer, setFetchPlayer] = useState([]);
   const [stats, setStats] = useState(null);
@@ -145,14 +145,24 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
               </div>
             </div>
 
-            {(isPlayer || isClub) && (
+            {isPlayer && (
               <>
                 <div className="current-club">
                   <span className="club-label">
                     {isPlayer ? "Current Club" : "Club Type"}
                   </span>
 
-                  <span className="club-name">
+                  <span
+                    className="club-name"
+                    onClick={() => {
+                      if (stats?.club_id) {
+                        openClub(stats.club_id);
+                      }
+                    }}
+                    style={{
+                      cursor: stats?.club_id ? "pointer" : "default"
+                    }}
+                  >
                     {stats?.club_name || "No Club Assigned"}
                   </span>
                 </div>
@@ -199,6 +209,25 @@ function Profile({ user, ssr, ssl, logout, setToast }) {
                   )}
                 </div>
               </>
+            )}
+
+            {isClub && (
+              <div className="profile-stats">
+                <div>
+                  <strong>{stats?.players ?? 0}</strong>
+                  <span>Players</span>
+                </div>
+
+                <div>
+                  <strong>{stats?.matches ?? 0}</strong>
+                  <span>Matches</span>
+                </div>
+
+                <div>
+                  <strong>{stats?.trophies ?? 0}</strong>
+                  <span>Trophies</span>
+                </div>
+              </div>
             )}
 
 

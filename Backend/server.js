@@ -203,17 +203,58 @@ app.post("/api/register", async (req, res) => {
       );
     }
 
-    res.json({
-      success: true,
-      user: {
+    let userObj;
+    try {
+      if (role === "player") {
+        const p = await db.query(
+          `SELECT id, state, district, position, club_id, player_name
+           FROM players WHERE user_id = $1`,
+          [userId]
+        );
+
+        const profile = p.rows[0] || {};
+
+        userObj = {
+          id: userId,
+          player_id: profile.id,
+          name,
+          role,
+          user_club_id: profile.club_id || null,
+          user_club_name: null,
+          state: profile.state || null,
+          district: profile.district || null,
+          position: profile.position || null
+        };
+      } else {
+        const c = await db.query(
+          `SELECT id AS club_id, club_name, state, district
+           FROM clubs WHERE user_id = $1`,
+          [userId]
+        );
+
+        const club = c.rows[0] || {};
+
+        userObj = {
+          id: userId,
+          user_club_id: club.club_id || null,
+          user_club_name: club.club_name || null,
+          name,
+          role,
+          state: club.state || null,
+          district: club.district || null
+        };
+      }
+    } catch (e) {
+      userObj = {
         id: userId,
         name,
         role,
-        state,
-        district,
-        position: role === "player" ? position : null
-      }
-    });
+        state: state || null,
+        district: district || null
+      };
+    }
+
+    res.json({ success: true, user: userObj });
 
   } catch (err) {
     console.error("REGISTER ERROR:", err);
@@ -315,6 +356,100 @@ app.post("/api/login", async (req, res) => {
       success: false,
       message: "Server error",
     });
+  }
+});
+
+// Refresh current user
+app.get("/api/me", async (req, res) => {
+  try {
+
+    const { userId } = req.query;
+
+    const baseUser = await db.query(
+      `
+      SELECT *
+      FROM users
+      WHERE id = $1
+      `,
+      [userId]
+    );
+
+    if (baseUser.rows.length === 0) {
+      return res.status(404).json({
+        success: false
+      });
+    }
+
+    const user = baseUser.rows[0];
+
+    if (user.role === "player") {
+
+      const profile = await db.query(
+        `
+        SELECT
+          p.id,
+          p.position,
+          p.club_id,
+          c.club_name,
+          p.state,
+          p.district
+        FROM players p
+        LEFT JOIN clubs c
+          ON p.club_id = c.id
+        WHERE p.user_id = $1
+        `,
+        [userId]
+      );
+
+      return res.json({
+        user: {
+          id: user.id,
+          player_id: profile.rows[0].id,
+          name: user.name,
+          role: user.role,
+          user_club_id: profile.rows[0].club_id,
+          user_club_name: profile.rows[0].club_name,
+          state: profile.rows[0].state,
+          district: profile.rows[0].district,
+          position: profile.rows[0].position
+        }
+      });
+    }
+
+    // Club
+    const club = await db.query(
+      `
+      SELECT
+        id,
+        club_name,
+        state,
+        district
+      FROM clubs
+      WHERE user_id = $1
+      `,
+      [userId]
+    );
+
+    return res.json({
+      user: {
+        id: user.id,
+        user_club_id: club.rows[0].id,
+        user_club_name: club.rows[0].club_name,
+        name: user.name,
+        role: user.role,
+        state: club.rows[0].state,
+        district: club.rows[0].district
+      }
+    });
+
+  } catch (err) {
+
+    console.log(err);
+
+    res.status(500).json({
+      success: false
+    });
+
   }
 });
 
@@ -1096,11 +1231,11 @@ app.post("/api/club/follow", async (req, res) => {
       `SELECT user_id, club_name
       FROM clubs
       WHERE id = $1`,
-          [clubId]
-        );
+      [clubId]
+    );
 
-        const myClubName = await db.query(
-          `SELECT club_name
+    const myClubName = await db.query(
+      `SELECT club_name
       FROM clubs
       WHERE id = $1`,
       [followerClubId]
@@ -1267,6 +1402,15 @@ app.post("/api/friendly/create", async (req, res) => {
       });
     }
 
+    const hostClub = await db.query(
+      `
+      SELECT club_name
+      FROM clubs
+      WHERE id = $1
+      `,
+      [hostClubId]
+    );
+
     const match = await db.query(
       `INSERT INTO friendly_matches
        (
@@ -1317,7 +1461,7 @@ app.post("/api/friendly/create", async (req, res) => {
         opponent.rows[0].user_id,
         userId,
         "friendly_request",
-        `${title} friendly match invitation`,
+        `${hostClub.rows[0].club_name} invited you for a friendly match`,
         match.rows[0].id
       ]
     );
@@ -1346,9 +1490,23 @@ app.post("/api/friendly/request/:id", async (req, res) => {
     const { id } = req.params;
     const { action } = req.body;
 
-    console.log("FRIENDLY ACTION");
-    console.log("ID:", id);
-    console.log("ACTION:", action);
+    const match = await db.query(
+      `
+      SELECT *
+      FROM friendly_matches
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (match.rows.length === 0) {
+      return res.status(404).json({
+        success: false
+      });
+    }
+
+    const friendly = match.rows[0];
+
     if (action === "accept") {
       await db.query(
         `UPDATE friendly_matches
@@ -1366,6 +1524,43 @@ app.post("/api/friendly/request/:id", async (req, res) => {
         [id]
       );
     }
+
+    const hostClub = await db.query(
+      `
+      SELECT user_id
+      FROM clubs
+      WHERE id = $1
+      `,
+      [friendly.host_club_id]
+    );
+
+    const opponentClub = await db.query(
+      `
+      SELECT club_name
+      FROM clubs
+      WHERE id = $1
+      `,
+      [friendly.opponent_club_id]
+    );
+
+    await db.query(
+      `
+      INSERT INTO notifications
+      (
+        user_id,
+        type,
+        message
+      )
+      VALUES($1,$2,$3)
+      `,
+      [
+        hostClub.rows[0].user_id,
+        "friendly_response",
+        action === "accept"
+          ? `${opponentClub.rows[0].club_name} accepted your friendly request.`
+          : `${opponentClub.rows[0].club_name} declined your friendly request.`
+      ]
+    );
 
     await db.query(
       "DELETE FROM notifications WHERE friendly_match_id=$1",
@@ -1539,6 +1734,15 @@ app.post("/api/tournament/register", async (req, res) => {
   try {
     const { clubId, tournamentId } = req.body;
 
+    console.log("clubId =", clubId);
+    console.log("tournamentId =", tournamentId);
+
+    if (!clubId) {
+      return res.status(400).json({
+        message: "clubId is missing"
+      });
+    }
+
     const existing = await db.query(
       `SELECT *
        FROM tournament_registrations
@@ -1559,6 +1763,7 @@ app.post("/api/tournament/register", async (req, res) => {
        VALUES ($1, $2)`,
       [tournamentId, clubId]
     );
+    console.log("Registration successful");
 
     res.json({
       success: true,
@@ -1566,10 +1771,11 @@ app.post("/api/tournament/register", async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.error("Tournament Register Error:");
+    console.error(error);
 
     res.status(500).json({
-      message: "Server error"
+      message: error.message
     });
   }
 });
@@ -2008,6 +2214,7 @@ app.get("/api/profile/stats", async (req, res) => {
           p.position,
           p.bio,
           p.created_at,
+          c.id AS club_id,
           c.club_name
       FROM players p
 
@@ -2383,7 +2590,6 @@ app.post("/api/club/leave", async (req, res) => {
   }
 });
 
-//get my posts
 // Get my posts
 app.get("/api/posts/me/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -2627,16 +2833,17 @@ app.get("/api/player/:id", async (req, res) => {
     const player = playerResult.rows[0];
 
     let connectionStatus = "none";
+    let inviteStatus = "none";
 
     if (viewerUserId) {
 
       // Find viewer's player id
       const viewer = await db.query(
         `
-    SELECT id
-    FROM players
-    WHERE user_id = $1
-    `,
+        SELECT id
+        FROM players
+        WHERE user_id = $1
+        `,
         [viewerUserId]
       );
 
@@ -2646,19 +2853,19 @@ app.get("/api/player/:id", async (req, res) => {
 
         const connection = await db.query(
           `
-      SELECT status
-      FROM player_connections
-      WHERE
-      (
-        sender_player_id = $1
-        AND receiver_player_id = $2
-      )
-      OR
-      (
-        sender_player_id = $2
-        AND receiver_player_id = $1
-      )
-      `,
+          SELECT status
+          FROM player_connections
+          WHERE
+          (
+            sender_player_id = $1
+            AND receiver_player_id = $2
+          )
+          OR
+          (
+            sender_player_id = $2
+            AND receiver_player_id = $1
+          )
+          `,
           [
             viewerPlayerId,
             player.id
@@ -2670,7 +2877,51 @@ app.get("/api/player/:id", async (req, res) => {
         }
 
       }
+    }
 
+    if (viewerUserId) {
+      const viewerClub = await db.query(
+        `
+        SELECT id
+        FROM clubs
+        WHERE user_id = $1
+        `,
+        [viewerUserId]
+      );
+
+      if (viewerClub.rows.length > 0) {
+
+        // Player is currently in this club
+        if (player.club_id === viewerClub.rows[0].id) {
+
+          inviteStatus = "accepted";
+
+        } else {
+
+          // Check only pending invite
+          const invite = await db.query(
+            `
+            SELECT status
+            FROM player_invites
+            WHERE club_id = $1
+            AND player_id = $2
+            AND status = 'pending'
+            `,
+            [
+              viewerClub.rows[0].id,
+              player.id
+            ]
+          );
+
+          if (invite.rows.length > 0) {
+            inviteStatus = "pending";
+          } else {
+            inviteStatus = "none";
+          }
+
+        }
+
+      }
     }
 
     // Player posts
@@ -2711,14 +2962,14 @@ app.get("/api/player/:id", async (req, res) => {
 
       stats,
 
-      connection_status: connectionStatus
+      connection_status: connectionStatus,
+      invite_status: inviteStatus
 
     });
 
   }
 
   catch (err) {
-
     console.log(err);
 
     res.status(500).json({
@@ -2726,7 +2977,6 @@ app.get("/api/player/:id", async (req, res) => {
     });
 
   }
-
 });
 
 // Send player connection request
@@ -3118,6 +3368,238 @@ app.post("/api/player/message/send", async (req, res) => {
     message:
       result.rows[0]
   });
+});
+
+// send player invite from club
+app.post("/api/player/invite", async (req, res) => {
+  try {
+    const { clubId, playerId, userId } = req.body;
+
+    const existing = await db.query(
+      `
+      SELECT *
+      FROM player_invites
+      WHERE club_id=$1
+      AND player_id=$2
+      AND status='pending'
+      `,
+      [clubId, playerId]
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invite already sent"
+      });
+    }
+
+    const clubResult = await db.query(
+      `
+      SELECT club_name
+      FROM clubs
+      WHERE id=$1
+      `,
+      [clubId]
+    );
+
+    const clubName = clubResult.rows[0].club_name;
+
+    // Create invite and get its id
+    const invite = await db.query(
+      `
+      INSERT INTO player_invites
+      (
+        club_id,
+        player_id
+      )
+      VALUES($1,$2)
+      RETURNING id
+      `,
+      [clubId, playerId]
+    );
+
+    const receiver = await db.query(
+      `
+      SELECT user_id
+      FROM players
+      WHERE id=$1
+      `,
+      [playerId]
+    );
+
+    await db.query(
+      `
+      INSERT INTO notifications
+      (
+        user_id,
+        actor_user_id,
+        type,
+        message,
+        player_invite_id
+      )
+      VALUES($1,$2,$3,$4,$5)
+      `,
+      [
+        receiver.rows[0].user_id,
+        userId,
+        "club_invite",
+        `${clubName} invited you to join their club.`,
+        invite.rows[0].id
+      ]
+    );
+
+    res.json({
+      success: true
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
+});
+
+//Accept or reject club invite by player
+app.post("/api/player/invite/:id", async (req, res) => {
+  try {
+
+    const { id } = req.params;
+    const { action } = req.body;
+
+    const inviteResult = await db.query(
+      `
+      SELECT *
+      FROM player_invites
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (inviteResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Invite not found"
+      });
+    }
+
+    const invite = inviteResult.rows[0];
+
+    if (action === "accept") {
+      const player = await db.query(
+        `
+        SELECT club_id
+        FROM players
+        WHERE id = $1
+        `,
+        [invite.player_id]
+      );
+
+      if (player.rows[0].club_id) {
+
+        return res.status(400).json({
+          success: false,
+          message: "Leave your current club before joining another club."
+        });
+
+      }
+
+      await db.query(
+        `
+        UPDATE player_invites
+        SET status = 'accepted'
+        WHERE id = $1
+        `,
+        [id]
+      );
+
+      await db.query(
+        `
+        UPDATE players
+        SET club_id = $1
+        WHERE id = $2
+        `,
+        [
+          invite.club_id,
+          invite.player_id
+        ]
+      );
+
+    } else {
+
+      await db.query(
+        `
+        UPDATE player_invites
+        SET status = 'declined'
+        WHERE id = $1
+        `,
+        [id]
+      );
+
+    }
+
+    // Get club information
+    const club = await db.query(
+      `
+      SELECT user_id, club_name
+      FROM clubs
+      WHERE id = $1
+      `,
+      [invite.club_id]
+    );
+
+    // Get player information
+    const player = await db.query(
+      `
+      SELECT player_name
+      FROM players
+      WHERE id = $1
+      `,
+      [invite.player_id]
+    );
+
+    await db.query(
+      `
+      INSERT INTO notifications
+      (
+        user_id,
+        actor_user_id,
+        type,
+        message
+      )
+      VALUES($1,$2,$3,$4)
+      `,
+      [
+        club.rows[0].user_id,
+        null,
+        "club_invite_response",
+        action === "accept"
+          ? `${player.rows[0].player_name} accepted your club invitation.`
+          : `${player.rows[0].player_name} declined your club invitation.`
+      ]
+    );
+
+    // Remove the player's pending notification
+    await db.query(
+      `
+      DELETE FROM notifications
+      WHERE player_invite_id = $1
+      `,
+      [id]
+    );
+
+    res.json({
+      success: true
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false
+    });
+  }
 });
 
 server.listen(PORT, () => {

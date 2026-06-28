@@ -10,9 +10,9 @@ function ClubProfile({ clubId, currentUser, setCurrentUser, onBack, openLogin, s
     const [clubData, setClubData] = useState(null);
     const [activeTab, setActiveTab] = useState("players");
 
-   useEffect(() => {
-    fetchClub();
-}, [clubId]);
+    useEffect(() => {
+        fetchClub();
+    }, [clubId]);
 
     async function fetchClub() {
         const res = await api.get(`/api/club/${clubId}`, {
@@ -119,29 +119,24 @@ function ClubProfile({ clubId, currentUser, setCurrentUser, onBack, openLogin, s
                     type: ""
                 });
             }, 3000);
-            setCurrentUser({
 
-                ...currentUser,
-
-                user_club_id: null
-
+            const res = await api.get("/api/me", {
+                params: {
+                    userId: currentUser.id
+                }
             });
 
+            setCurrentUser(res.data.user);
+
             localStorage.setItem(
-
                 "currentUser",
-
-                JSON.stringify({
-
-                    ...currentUser,
-
-                    user_club_id: null
-
-                })
-
+                JSON.stringify(res.data.user)
             );
+
             await fetchClub();
+
             onBack();
+
         }
         catch (err) {
             setToast({

@@ -8,13 +8,19 @@ import GroupsIcon from "@mui/icons-material/Groups";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import UpdateResultModal from "../components/UpdateResultModal";
 
-function TournamentDetails({ tournament, onBack, clubId, role, setToast, refreshTournament }) {
+function TournamentDetails({ tournament, onBack, clubId, role, setToast, refreshTournament, currentUser }) {
     const [registeredClubs, setRegisteredClubs] = useState([]);
     const [layout, setLayout] = useState("clubs");
     const [fixtureMatches, setFixtureMatches] = useState([]);
     const [selectedMatch, setSelectedMatch] = useState(null);
 
     const registrationClosed = new Date() > new Date(tournament.registration_deadline);
+
+    const effectiveClubId = clubId ?? currentUser?.user_club_id;
+
+    const isRegistered = registeredClubs.some(
+        club => club.id === effectiveClubId
+    );
 
     useEffect(() => {
         getRegistered();
@@ -23,10 +29,22 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
     async function registerClub() {
         try {
+            console.log("Register payload:", { clubId: effectiveClubId, tournamentId: tournament.id });
+
+            if (!effectiveClubId) {
+                console.error("Missing clubId, aborting registration");
+                setToast({ message: "Registration failed: missing club id", type: "error" });
+                setTimeout(() => setToast({ message: "", type: "" }), 3000);
+                return;
+            }
+
             await api.post("/api/tournament/register", {
-                clubId,
+                clubId: effectiveClubId,
                 tournamentId: tournament.id
             });
+
+            await getRegistered();
+            await refreshTournament(tournament.id);
 
             setToast({
                 message: "Tournament registration successful",
@@ -64,8 +82,9 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
                     tournamentId: tournament.id
                 }
             });
-            console.log(res.data);
+
             setRegisteredClubs(res.data.clubs);
+        
         }
         catch (error) {
             console.log(error);
@@ -114,7 +133,6 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
             console.log(error);
         }
     }
-
 
 
     return (
@@ -239,16 +257,18 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
                         )}
                     </div>
                     {role === "club" &&
-                        tournament.host_club_id !== clubId && (
+                        tournament.host_club_id !== effectiveClubId && (
 
                             <button
                                 className="register-btn"
-                                disabled={registrationClosed}
+                                disabled={registrationClosed || isRegistered}
                                 onClick={registerClub}
                             >
                                 {registrationClosed
                                     ? "Registration Closed"
-                                    : "Register Club"}
+                                    : isRegistered
+                                        ? "✓ Registered"
+                                        : "Register Club"}
                             </button>
 
                         )}
@@ -316,7 +336,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
                                 </div>
 
-                                {tournament.host_club_id === clubId && (
+                                {tournament.host_club_id === effectiveClubId && (
 
                                     match.status === "Completed" ? (
 

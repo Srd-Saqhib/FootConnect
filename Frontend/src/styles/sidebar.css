@@ -166,6 +166,7 @@
     cursor:pointer;
 
     transition:.2s;
+    position:relative;
 }
 
 .side-item:hover{
@@ -174,16 +175,16 @@
 }
 
 .active-side-item{
+    background:#eef2ff;
 
-    background:#1F3897;
+    color:#1F3897;
 
-    color:white;
+    border-radius:12px;
+
+    box-shadow: inset 0 -3px 0 #1F3897;
 }
 
-.active-side-item .side-icon{
 
-    color:white;
-}
 
 .side-icon{
 

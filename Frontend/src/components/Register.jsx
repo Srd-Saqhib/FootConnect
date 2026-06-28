@@ -132,7 +132,16 @@ function Register(props) {
       console.log("Server response:", res.data);
       setError("");
       if (res.data.success) {
-        props.onSuccess && props.onSuccess(res.data.user);
+        try {
+          const meRes = await api.get("/api/me", {
+            params: { userId: res.data.user.id }
+          });
+
+          props.onSuccess && props.onSuccess(meRes.data.user);
+        } catch (err) {
+          // fallback to returned user
+          props.onSuccess && props.onSuccess(res.data.user);
+        }
       }
     } catch (err) {
       setError("Server error. Try again.");

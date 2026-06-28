@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "./api";
 import Header from "./components/Header";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
@@ -34,14 +34,31 @@ function App() {
     const savedUser = localStorage.getItem("currentUser");
 
     if (savedUser) {
-      setCurrentUser(JSON.parse(savedUser));
-      setIsLoggedIn(true);
+      try {
+        const parsed = JSON.parse(savedUser);
+
+        // try to refresh user from backend for full profile
+        api.get("/api/me", { params: { userId: parsed.id } })
+          .then((res) => {
+            setCurrentUser(res.data.user);
+            setIsLoggedIn(true);
+          })
+          .catch(() => {
+            // fallback to local storage
+            setCurrentUser(parsed);
+            setIsLoggedIn(true);
+          });
+
+      } catch (e) {
+        // invalid JSON - clear
+        localStorage.removeItem("currentUser");
+      }
     }
   }, []);
 
   async function refreshTournament(id) {
     try {
-      const res = await axios.get(`/api/tournament/${id}`);
+      const res = await api.get(`/api/tournament/${id}`);
       setSelectedTournament(res.data.tournament);
     } catch (error) {
       console.log(error);
@@ -49,11 +66,19 @@ function App() {
   }
 
   function openClub(clubId) {
+    setSelectedPlayer(null);
+    setSelectedTournament(null);
+
     setSelectedClub(clubId);
+    setCurrentPage("clubs");
   }
 
   function openPlayer(playerId) {
+    setSelectedClub(null);
+    setSelectedTournament(null);
+
     setSelectedPlayer(playerId);
+    setCurrentPage("community");
   }
 
   return (
@@ -71,12 +96,19 @@ function App() {
         <div onClick={() => setShowLogin(false)} className="modal-overlay">
           <div onClick={(e) => e.stopPropagation()} className="inner">
             <Login
-              onSuccess={(user) => {
-                setCurrentUser(user);
-                localStorage.setItem("currentUser", JSON.stringify(user));
-                setIsLoggedIn(true);
-                setShowLogin(false);
-              }}
+             onSuccess={(user) => {
+    console.log("BEFORE SET", user);
+
+    setCurrentUser(user);
+
+    console.log("AFTER LOCALSTORAGE");
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    console.log(JSON.parse(localStorage.getItem("currentUser")));
+
+    setIsLoggedIn(true);
+    setShowLogin(false);
+}}
             />
           </div>
         </div>
@@ -105,6 +137,7 @@ function App() {
 
       <Sidebar
         currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
         openClub={openClub}
         openPlayer={openPlayer}
         setToast={setToast}
@@ -112,6 +145,9 @@ function App() {
 
       {currentPage === "home" &&
         (selectedTournament ? (
+          <>
+          {console.log("APP RENDER")}
+{console.log(currentUser)}
           <TournamentDetails
             tournament={selectedTournament}
             onBack={() => setSelectedTournament(null)}
@@ -119,7 +155,9 @@ function App() {
             role={currentUser?.role}
             setToast={setToast}
             refreshTournament={refreshTournament}
+            currentUser={currentUser}
           />
+          </>
         ) : (
           <Home
             currentUser={currentUser}
@@ -164,6 +202,7 @@ function App() {
                 currentUser={currentUser}
                 onBack={() => setSelectedPlayer(null)}
                 openClub={openClub}
+                setToast={setToast}
               />
               :
               <Community
@@ -179,7 +218,8 @@ function App() {
           logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }}
           ssr={() => setShowRegister(true)}
           ssl={() => setShowLogin(true)}
-          setToast={setToast} />
+          setToast={setToast}
+          openClub={openClub} />
       }
 
       <Toast

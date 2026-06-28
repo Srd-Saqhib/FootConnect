@@ -5,9 +5,10 @@ import "../styles/sidebar.css";
 import MessageIcon from "@mui/icons-material/Message";
 import CancelIcon from "@mui/icons-material/Cancel";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 const socket = io(
-  import.meta.env.VITE_SOCKET_URL
+    import.meta.env.VITE_SOCKET_URL
 );
 
 function Sidebar(props) {
@@ -288,7 +289,7 @@ function Sidebar(props) {
     }
 
     async function sendDM() {
-   
+
         if (!dmInput.trim()) return;
 
         const res = await api.post(
@@ -300,17 +301,65 @@ function Sidebar(props) {
             }
         );
 
-             console.log(
-            "LOCAL ADD",
-            res.data.message.id
-        );
 
         setPlayerMessages(
             prev => [...prev, res.data.message]
         );
-
         setDmInput("");
     }
+
+    async function clubInvite(inviteId, action) {
+        try {
+
+            await api.post(`/api/player/invite/${inviteId}`, {
+                action
+            });
+
+            if (action === "accept") {
+
+                const res = await api.get("/api/me", {
+                    params: {
+                        userId: props.currentUser.id
+                    }
+                });
+
+                props.setCurrentUser(res.data.user);
+
+                localStorage.setItem(
+                    "currentUser",
+                    JSON.stringify(res.data.user)
+                );
+            }
+
+            await getNotification();
+
+
+            props.setToast({
+                message:
+                    action === "accept"
+                        ? "Club joined successfully."
+                        : "Invitation declined.",
+                type: "success"
+            });
+            setTimeout(() => {
+                props.setToast({ message: "", type: "" });
+            }, 3000)
+
+        } catch (error) {
+
+            props.setToast({
+                message:
+                    error.response?.data?.message ||
+                    "Something went wrong.",
+                type: "error"
+            });
+            setTimeout(() => {
+                props.setToast({ message: "", type: "" });
+            }, 3000)
+
+        }
+    }
+
 
     return (
         <div>
@@ -345,17 +394,35 @@ function Sidebar(props) {
                         <h3 className="side-title">Football Hub</h3>
 
                         <div className="side-actions">
-                            <div className="side-item" onClick={() => changePanel("clubChat")}>
+                            <div
+                                className={`side-item ${wbutton === "clubChat"
+                                    ? "active-side-item"
+                                    : ""
+                                    }`}
+                                onClick={() => changePanel("clubChat")}
+                            >
                                 <MessageIcon className="side-icon" />
                                 <span>Club Chat</span>
                             </div>
 
-                            <div className="side-item" onClick={() => changePanel("connections")}>
-                                <MessageIcon className="side-icon" />
+                            <div
+                                className={`side-item ${wbutton === "connections"
+                                    ? "active-side-item"
+                                    : ""
+                                    }`}
+                                onClick={() => changePanel("connections")}
+                            >
+                                <GroupsIcon className="side-icon" />
                                 <span>Connections</span>
                             </div>
 
-                            <div className="side-item" onClick={() => changePanel("notifications")}>
+                            <div
+                                className={`side-item ${wbutton === "notifications"
+                                    ? "active-side-item"
+                                    : ""
+                                    }`}
+                                onClick={() => changePanel("notifications")}
+                            >
                                 <NotificationsIcon className="side-icon" />
                                 <span>Notifications</span>
                             </div>
@@ -530,6 +597,34 @@ function Sidebar(props) {
 
                                                 )
                                             }
+
+                                            {noti.type === "club_invite" && (
+                                                <div className="notif-actions">
+
+                                                    <button
+                                                        onClick={() =>
+                                                            clubInvite(
+                                                                noti.player_invite_id,
+                                                                "accept"
+                                                            )
+                                                        }
+                                                    >
+                                                        Accept
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() =>
+                                                            clubInvite(
+                                                                noti.player_invite_id,
+                                                                "decline"
+                                                            )
+                                                        }
+                                                    >
+                                                        Decline
+                                                    </button>
+
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
 
