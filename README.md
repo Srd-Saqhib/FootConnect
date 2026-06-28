@@ -169,7 +169,7 @@ npm start
 ![Home](screenshots/home.png)
 
 ### Clubs
-![Clubs](screenshots/club.png)
+![Clubs](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/club.png)
 
 ### Community Feed
 ![Community](screenshots/community.png)
