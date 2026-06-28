@@ -141,7 +141,7 @@ Socket.IO is used for real-time notifications and updates.
 ### Clone Repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/Srd-Saqhib/FootConnect
 cd FootConnect
 ```
 
