@@ -166,22 +166,22 @@ npm start
 ## Screenshots
 
 ### Home Page
-![Home](screenshots/home.png)
+![Home](Frontend/screenshots/home.png)
 
 ### Clubs
-![Clubs](screenshots/club.png)
+![Clubs](Frontend/screenshots/club.png)
 
 ### Community Feed
-![Community](screenshots/community.png)
+![Community](Frontend/screenshots/community.png)
 
 ### Profile
-![Profile](screenshots/profile.png)
+![Profile](Frontend/screenshots/profile.png)
 
 ### Tournament Details
-![Tournament](screenshots/tournamentDetail.png)
+![Tournament](Frontend/screenshots/tournamentDetail.png)
 
 ### Friendly Match Module
-![Friendly](screenshots/friendlyModule.png)
+![Friendly](Frontend/screenshots/friendlyModule.png)
 
 ---
 
