@@ -28,6 +28,7 @@ function Community(props) {
   const [feed, setFeed] = useState("general");
   const [search, setSearch] = useState("");
   const [searchedPlayers, setSearchedPlayers] = useState([]);
+  const [posting, setPosting] = useState(false);
 
   function displayArea() {
     if (showInput) {
@@ -116,6 +117,8 @@ function Community(props) {
   }
 
   async function sendPost() {
+    if (posting) return;
+
     if (!props.currentUser) {
       props.openLogin();
       setShowInput(false);
@@ -126,43 +129,51 @@ function Community(props) {
       return;
     }
 
-    if (editingPostId) {
-      await api.post("/api/post/edit", {
-        postId: editingPostId,
-        value: inputContent.trim(),
-        userId: props.currentUser.id
-      });
+    setPosting(true);
 
-      setToast({
-        message: "Post updated successfully",
-        type: "success"
-      });
+    try {
+      if (editingPostId) {
+        await api.post("/api/post/edit", {
+          postId: editingPostId,
+          value: inputContent.trim(),
+          userId: props.currentUser.id
+        });
 
-      setTimeout(() => {
-        setToast({ message: "", type: "" });
-      }, 3000)
+        setToast({
+          message: "Post updated successfully",
+          type: "success"
+        });
 
-      setEditingPostId(null);
+        setTimeout(() => {
+          setToast({ message: "", type: "" });
+        }, 3000)
+
+        setEditingPostId(null);
+        refreshFeed();
+      } else {
+        await api.post("/api/posts", {
+          userId: props.currentUser.id,
+          content: inputContent.trim()
+        });
+
+        setToast({
+          message: "Post created successfully",
+          type: "success"
+        });
+
+        setTimeout(() => {
+          setToast({ message: "", type: "" });
+        }, 3000);
+      }
+
+      setInputContent("");
       refreshFeed();
-    } else {
-      await api.post("/api/posts", {
-        userId: props.currentUser.id,
-        content: inputContent.trim()
-      });
-
-      setToast({
-        message: "Post created successfully",
-        type: "success"
-      });
-
-      setTimeout(() => {
-        setToast({ message: "", type: "" });
-      }, 3000);
+      setShowInput(false);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setPosting(false);
     }
-
-    setInputContent("");
-    refreshFeed();
-    setShowInput(false);
   }
 
   function editPost(post) {
@@ -614,7 +625,12 @@ function Community(props) {
             e.target.style.height = e.target.scrollHeight + "px";
           }}
         />
-        <button onClick={sendPost}>Post</button>
+        <button
+          onClick={sendPost}
+          disabled={posting}
+        >
+          {posting ? "Posting..." : editingPostId ? "Update" : "Post"}
+        </button>
       </div>
 
       <Toast

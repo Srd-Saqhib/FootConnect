@@ -83,6 +83,22 @@ function Sidebar(props) {
     }, []);
 
     useEffect(() => {
+        function handleNotification(noti) {
+            setUserNoti(prev => [noti, ...prev]);
+            props.setToast({ message: noti.message, type: "success" });
+            setTimeout(() => {
+                props.setToast({ message: "", type: "" });
+            }, 3000);
+        }
+
+        socket.on("notification", handleNotification);
+
+        return () => {
+            socket.off("notification", handleNotification);
+        };
+    }, []);
+
+    useEffect(() => {
         if (props.currentUser?.user_club_id) {
 
             socket.emit(

@@ -166,22 +166,22 @@ npm start
 ## Screenshots
 
 ### Home Page
-![Home](Frontend/screenshots/home.png)
+![Home](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/home.png)
 
 ### Clubs
-![Clubs](Frontend/screenshots/club.png)
+![Clubs](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/club.png)
 
 ### Community Feed
-![Community](Frontend/screenshots/community.png)
+![Community](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/community.png)
 
 ### Profile
-![Profile](Frontend/screenshots/profile.png)
+![Profile](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/profile.png)
 
 ### Tournament Details
-![Tournament](Frontend/screenshots/tournamentDetail.png)
+![Tournament](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/tournamentDetail.png)
 
 ### Friendly Match Module
-![Friendly](Frontend/screenshots/friendlyModule.png)
+![Friendly](https://raw.githubusercontent.com/Srd-Saqhib/FootConnect/main/Frontend/screenshots/friendlyModule.png)
 
 ---
 

@@ -3061,8 +3061,7 @@ app.post("/api/player/connect", async (req, res) => {
         receiverPlayerId
       ]
     );
-
-    await db.query(
+    const notifInsert = await db.query(
       `INSERT INTO notifications
       (
           user_id,
@@ -3071,7 +3070,8 @@ app.post("/api/player/connect", async (req, res) => {
           message,
           request_id
       )
-      VALUES($1,$2,$3,$4,$5)`,
+      VALUES($1,$2,$3,$4,$5)
+      RETURNING *`,
       [
         receiver.rows[0].user_id,
         senderUserId,
@@ -3080,6 +3080,16 @@ app.post("/api/player/connect", async (req, res) => {
         connection.rows[0].id
       ]
     );
+
+    // Emit a real-time notification to the receiver's player room
+    try {
+      io.to(`player-${receiverPlayerId}`).emit(
+        "notification",
+        notifInsert.rows[0]
+      );
+    } catch (e) {
+      console.error("Failed to emit notification", e);
+    }
 
     res.json({
       success: true
@@ -3148,7 +3158,7 @@ app.post("/api/player/connect/respond", async (req, res) => {
   }
 });
 
-//get connected players od  a user
+//get connected players of a user
 app.get("/api/player/connections/:userId", async (req, res) => {
 
   try {

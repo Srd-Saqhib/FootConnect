@@ -96,19 +96,12 @@ function App() {
         <div onClick={() => setShowLogin(false)} className="modal-overlay">
           <div onClick={(e) => e.stopPropagation()} className="inner">
             <Login
-             onSuccess={(user) => {
-    console.log("BEFORE SET", user);
-
-    setCurrentUser(user);
-
-    console.log("AFTER LOCALSTORAGE");
-    localStorage.setItem("currentUser", JSON.stringify(user));
-
-    console.log(JSON.parse(localStorage.getItem("currentUser")));
-
-    setIsLoggedIn(true);
-    setShowLogin(false);
-}}
+              onSuccess={(user) => {
+                setCurrentUser(user);
+                localStorage.setItem("currentUser", JSON.stringify(user));
+                setIsLoggedIn(true);
+                setShowLogin(false);
+              }}
             />
           </div>
         </div>
@@ -146,17 +139,17 @@ function App() {
       {currentPage === "home" &&
         (selectedTournament ? (
           <>
-          {console.log("APP RENDER")}
-{console.log(currentUser)}
-          <TournamentDetails
-            tournament={selectedTournament}
-            onBack={() => setSelectedTournament(null)}
-            clubId={currentUser?.user_club_id}
-            role={currentUser?.role}
-            setToast={setToast}
-            refreshTournament={refreshTournament}
-            currentUser={currentUser}
-          />
+            {console.log("APP RENDER")}
+            {console.log(currentUser)}
+            <TournamentDetails
+              tournament={selectedTournament}
+              onBack={() => setSelectedTournament(null)}
+              clubId={currentUser?.user_club_id}
+              role={currentUser?.role}
+              setToast={setToast}
+              refreshTournament={refreshTournament}
+              currentUser={currentUser}
+            />
           </>
         ) : (
           <Home

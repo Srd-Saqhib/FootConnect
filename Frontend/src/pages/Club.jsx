@@ -112,6 +112,28 @@ function Clubs(props) {
   }
 
   async function createTournament() {
+    if (new Date(registrationDeadline) > new Date(startDate)) {
+      props.setToast({
+        message: "Registration deadline cannot be after the tournament starts.",
+        type: "error"
+      });
+      props.setTimeout(() => {
+        setToast({ message: "", type: "" });
+      }, 3000);
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      props.setToast({
+        message: "End date must be after the start date.",
+        type: "error"
+      });
+      props.setTimeout(() => {
+        setToast({ message: "", type: "" });
+      }, 3000);
+      return;
+    }
+
     try {
       await api.post("/api/tournament/create", {
         hostClubId: props.currentUser.user_club_id,
@@ -258,8 +280,15 @@ function Clubs(props) {
 
               <input
                 type="date"
+                min={new Date().toISOString().split("T")[0]}
                 value={registrationDeadline}
-                onChange={(e) => setRegistrationDeadline(e.target.value)}
+                onChange={(e) => {
+                  setRegistrationDeadline(e.target.value)
+                  if (startDate && e.target.value > startDate) {
+                    setStartDate(e.target.value);
+                    setEndDate(e.target.value);
+                  }
+                }}
               />
             </div>
 
@@ -270,8 +299,14 @@ function Clubs(props) {
 
                 <input
                   type="date"
+                  min={registrationDeadline || new Date().toISOString().split("T")[0]}
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value)
+                    if (endDate && e.target.value > endDate) {
+                      setEndDate(e.target.value);
+                    }
+                  }}
                 />
               </div>
 
@@ -280,6 +315,7 @@ function Clubs(props) {
 
                 <input
                   type="date"
+                  min={startDate}
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
