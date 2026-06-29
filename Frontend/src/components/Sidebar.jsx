@@ -73,7 +73,12 @@ function Sidebar(props) {
     useEffect(() => {
         function handlePlayerChat(message) {
             console.log("SOCKET MESSAGE", message.id);
-            setPlayerMessages(prev => [...prev, message])
+            setPlayerMessages(prev => {
+                if (prev.some(m => m.id === message.id)) {
+                    return prev;
+                }
+                return [...prev, message];
+            });
         }
         socket.on("playerChat", handlePlayerChat);
 
@@ -85,9 +90,17 @@ function Sidebar(props) {
     useEffect(() => {
         function handleNotification(noti) {
             setUserNoti(prev => [noti, ...prev]);
-            props.setToast({ message: noti.message, type: "success" });
+
+            props.setToast({
+                message: noti.message,
+                type: "success"
+            });
+
             setTimeout(() => {
-                props.setToast({ message: "", type: "" });
+                props.setToast({
+                    message: "",
+                    type: ""
+                });
             }, 3000);
         }
 
@@ -96,24 +109,19 @@ function Sidebar(props) {
         return () => {
             socket.off("notification", handleNotification);
         };
-    }, []);
+    }, [props.setToast]);
 
     useEffect(() => {
         if (props.currentUser?.user_club_id) {
-
-            socket.emit(
-                "joinClub",
-                props.currentUser.user_club_id
-            );
+            socket.emit("joinClub", props.currentUser.user_club_id);
         }
     }, [props.currentUser]);
 
     useEffect(() => {
-        socket.emit("joinPlayer",
-            props.currentUser?.player_id
-        )
-
-    }, [props.currentUser])
+        if (props.currentUser?.player_id) {
+            socket.emit("joinPlayer", props.currentUser.player_id);
+        }
+    }, [props.currentUser]);
 
     useEffect(() => {
         if (
@@ -218,6 +226,17 @@ function Sidebar(props) {
 
     async function respondConnection(connectionId, notificationId, action) {
         try {
+            if (!connectionId) {
+                props.setToast({
+                    message: "Unable to process connection request.",
+                    type: "error"
+                });
+                setTimeout(() => {
+                    props.setToast({ message: "", type: "" });
+                }, 3000);
+                return;
+            }
+
             await api.post("/api/player/connect/respond", {
                 connectionId,
                 notificationId,
@@ -230,12 +249,14 @@ function Sidebar(props) {
             props.setToast({
                 message:
                     action === "accept"
-                        ?
-                        "Connection accepted."
-                        :
-                        "Connection declined.",
+                        ? "Connection accepted."
+                        : "Connection declined.",
                 type: "success"
             });
+
+            setTimeout(() => {
+                props.setToast({ message: "", type: "" });
+            }, 3000);
         }
         catch (err) {
             console.log(err);
@@ -244,6 +265,10 @@ function Sidebar(props) {
                 message: "Something went wrong.",
                 type: "error"
             });
+
+            setTimeout(() => {
+                props.setToast({ message: "", type: "" });
+            }, 3000);
         }
     }
 
@@ -317,10 +342,12 @@ function Sidebar(props) {
             }
         );
 
-
-        setPlayerMessages(
-            prev => [...prev, res.data.message]
-        );
+        setPlayerMessages(prev => {
+            if (prev.some(m => m.id === res.data.message.id)) {
+                return prev;
+            }
+            return [...prev, res.data.message];
+        });
         setDmInput("");
     }
 
@@ -586,7 +613,7 @@ function Sidebar(props) {
                                                             <button
                                                                 onClick={() =>
                                                                     respondConnection(
-                                                                        noti.request_id,
+                                                                        noti.player_connection_id || noti.request_id,
                                                                         noti.id,
                                                                         "accept"
                                                                     )
@@ -598,7 +625,7 @@ function Sidebar(props) {
                                                             <button
                                                                 onClick={() =>
                                                                     respondConnection(
-                                                                        noti.request_id,
+                                                                        noti.player_connection_id || noti.request_id,
                                                                         noti.id,
                                                                         "decline"
                                                                     )

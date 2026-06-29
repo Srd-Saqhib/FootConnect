@@ -13,16 +13,17 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub, setToast }) {
     const [activeTab, setActiveTab] = useState("posts");
 
     useEffect(() => {
-        fetchPlayer();
-    }, []);
+        if (playerId && currentUser?.id) {
+            fetchPlayer();
+        }
+    }, [playerId, currentUser?.id]);
 
     async function fetchPlayer() {
-
         try {
 
             const res = await api.get(`/api/player/${playerId}`, {
                 params: {
-                    viewerUserId: currentUser.id
+                    viewerUserId: currentUser?.id || null
                 }
             });
 
@@ -45,14 +46,53 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub, setToast }) {
 
     async function connectPlayer() {
         try {
-            await api.post("/api/player/connect", {
+            if (!currentUser?.id) {
+                setToast({
+                    message: "Please log in to connect with players.",
+                    type: "error"
+                });
+                setTimeout(() => {
+                    setToast({ message: "", type: "" });
+                }, 3000);
+                return;
+            }
+
+            const res = await api.post("/api/player/connect", {
                 senderUserId: currentUser.id,
                 receiverPlayerId: playerData.player.id
             });
-            await fetchPlayer();
-        }
-        catch (err) {
-            console.log(err);
+
+            setPlayerData((prev) => prev ? {
+                ...prev,
+                connection_status: res.data.connection_status || "pending"
+            } : prev);
+
+            setToast({
+                message: "Connection request sent.",
+                type: "success"
+            });
+
+            setTimeout(() => {
+                setToast({
+                    message: "",
+                    type: ""
+                });
+            }, 3000);
+
+        } catch (err) {
+            setToast({
+                message:
+                    err.response?.data?.message ||
+                    "Failed to send connection request.",
+                type: "error"
+            });
+
+            setTimeout(() => {
+                setToast({
+                    message: "",
+                    type: ""
+                });
+            }, 3000);
         }
     }
 

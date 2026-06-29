@@ -2936,10 +2936,23 @@ app.get("/api/player/:id", async (req, res) => {
       [player.user_id]
     );
 
-    // Stats
+    const connectionCount = await db.query(
+      `
+    SELECT COUNT(*) AS total
+    FROM player_connections
+    WHERE status = 'accepted'
+      AND (
+            sender_player_id = $1
+         OR receiver_player_id = $1
+      )
+    `,
+      [player.id]
+    );
+
+    //stats
     const stats = {
       posts: posts.rows.length,
-      connections: 0
+      connections: Number(connectionCount.rows[0].total)
     };
 
     res.json({
@@ -3011,8 +3024,8 @@ app.post("/api/player/connect", async (req, res) => {
 
     const receiver = await db.query(
       `SELECT user_id
-   FROM players
-   WHERE id = $1`,
+        FROM players
+        WHERE id = $1`,
       [receiverPlayerId]
     );
 
@@ -3043,7 +3056,9 @@ app.post("/api/player/connect", async (req, res) => {
     );
 
     if (existing.rows.length > 0) {
-      return res.status(400).json({
+      return res.status(200).json({
+        success: true,
+        connection_status: existing.rows[0].status,
         message: "Connection already exists."
       });
     }
@@ -3052,15 +3067,18 @@ app.post("/api/player/connect", async (req, res) => {
       `INSERT INTO player_connections
       (
           sender_player_id,
-          receiver_player_id
+          receiver_player_id,
+          status
       )
-      VALUES($1,$2)
-      RETURNING id`,
+      VALUES($1,$2,$3)
+      RETURNING id, status`,
       [
         senderPlayerId,
-        receiverPlayerId
+        receiverPlayerId,
+        "pending"
       ]
     );
+
     const notifInsert = await db.query(
       `INSERT INTO notifications
       (
@@ -3068,7 +3086,7 @@ app.post("/api/player/connect", async (req, res) => {
           actor_user_id,
           type,
           message,
-          request_id
+          player_connection_id
       )
       VALUES($1,$2,$3,$4,$5)
       RETURNING *`,
@@ -3092,7 +3110,8 @@ app.post("/api/player/connect", async (req, res) => {
     }
 
     res.json({
-      success: true
+      success: true,
+      connection_status: connection.rows[0].status || "pending"
     });
 
   }
@@ -3110,29 +3129,87 @@ app.post("/api/player/connect/respond", async (req, res) => {
   try {
     const { connectionId, notificationId, action } = req.body;
 
-    if (action === "accept") {
+    if (!connectionId) {
+      return res.status(400).json({
+        success: false,
+        message: "connectionId is required"
+      });
+    }
 
-      await db.query(
+    const connection = await db.query(
+      `
+        SELECT sender_player_id, receiver_player_id
+        FROM player_connections
+        WHERE id=$1
+      `,
+      [connectionId]
+    );
+
+    if (connection.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Connection not found"
+      });
+    }
+
+    const { sender_player_id, receiver_player_id } = connection.rows[0];
+
+    const senderUser = await db.query(
+      `
+        SELECT user_id
+        FROM players
+        WHERE id=$1
+      `,
+      [sender_player_id]
+    );
+
+    const receiverUser = await db.query(
+      `
+        SELECT user_id
+        FROM players
+        WHERE id=$1
+      `,
+      [receiver_player_id]
+    );
+
+    const senderUserId = senderUser.rows[0]?.user_id;
+    const receiverUserId = receiverUser.rows[0]?.user_id;
+
+    let result;
+
+    if (action === "accept") {
+      result = await db.query(
         `
                 UPDATE player_connections
                 SET status='accepted'
                 WHERE id=$1
+                RETURNING *
                 `,
         [connectionId]
       );
 
-    }
-
-    else {
-
-      await db.query(
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Connection not found"
+        });
+      }
+    } else {
+      result = await db.query(
         `
                 DELETE FROM player_connections
                 WHERE id=$1
+                RETURNING *
                 `,
         [connectionId]
       );
 
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Connection not found"
+        });
+      }
     }
 
     await db.query(
@@ -3143,6 +3220,37 @@ app.post("/api/player/connect/respond", async (req, res) => {
             `,
       [notificationId]
     );
+
+    if (senderUserId) {
+      const responseNotification = await db.query(
+        `
+          INSERT INTO notifications
+          (
+            user_id,
+            actor_user_id,
+            type,
+            message,
+            player_connection_id
+          )
+          VALUES($1,$2,$3,$4,$5)
+          RETURNING *
+        `,
+        [
+          senderUserId,
+          receiverUserId,
+          "player_connection_update",
+          action === "accept"
+            ? "Your connection request was accepted."
+            : "Your connection request was declined.",
+          connectionId
+        ]
+      );
+
+      io.to(`player-${sender_player_id}`).emit(
+        "notification",
+        responseNotification.rows[0]
+      );
+    }
 
     res.json({
       success: true

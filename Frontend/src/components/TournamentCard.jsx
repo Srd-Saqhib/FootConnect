@@ -5,14 +5,20 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupsIcon from "@mui/icons-material/Groups";
 
 function TournamentCard({ tournament, openTournament }) {
+
+    const today = new Date();
+
+    const registrationDeadline = new Date(tournament.registration_deadline);
+    const tournamentEnd = new Date(tournament.end_date);
+
+    const registrationClosed = today > registrationDeadline;
+    const tournamentEnded = today > tournamentEnd;
+
     const daysLeft = Math.ceil(
-        (new Date(tournament.registration_deadline) - new Date()) /
+        (registrationDeadline - today) /
         (1000 * 60 * 60 * 24)
     );
 
-    const registrationClosed = new Date() > new Date(tournament.registration_deadline);
-
-    
     return (
         <div className="tournament-card">
 
@@ -59,23 +65,27 @@ function TournamentCard({ tournament, openTournament }) {
             </div>
 
             <div className="tour-status">
-                {daysLeft > 1
-                    ? `⏳ Registration closes in ${daysLeft} days`
-                    : daysLeft === 1
-                        ? "⏳ Registration closes tomorrow"
-                        : "🔒 Registration Closed"}
+                {tournamentEnded
+                    ? "🏁 Tournament Ended"
+                    : registrationClosed
+                        ? "🔒 Registration Closed"
+                        : daysLeft > 1
+                            ? `⏳ Registration closes in ${daysLeft} days`
+                            : daysLeft === 1
+                                ? "⏳ Registration closes tomorrow"
+                                : "🔒 Registration Closed"}
             </div>
 
             <div className="tour-description">
                 {tournament.description}
             </div>
 
-                <button
-                    className="details-btn"
-                    onClick={() => openTournament(tournament)}
-                >
-                    View Details
-                </button>
+            <button
+                className="details-btn"
+                onClick={() => openTournament(tournament)}
+            >
+                View Details
+            </button>
 
         </div>
     );
