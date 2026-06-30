@@ -2,26 +2,30 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import Loading from "../components/Loading";
 import "../styles/playerprofile.css";
+import { useParams, useNavigate } from "react-router-dom";
 
 import PersonIcon from "@mui/icons-material/Person";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import GroupsIcon from "@mui/icons-material/Groups";
 
-function PlayerProfile({ playerId, currentUser, onBack, openClub, setToast }) {
+function PlayerProfile({ currentUser, openClub, setToast }) {
 
     const [playerData, setPlayerData] = useState(null);
     const [activeTab, setActiveTab] = useState("posts");
 
+    const { id } = useParams();
+    const navigate = useNavigate();
+
     useEffect(() => {
-        if (playerId && currentUser?.id) {
+        if (id) {
             fetchPlayer();
         }
-    }, [playerId, currentUser?.id]);
+    }, [id, currentUser?.id]);
 
     async function fetchPlayer() {
         try {
 
-            const res = await api.get(`/api/player/${playerId}`, {
+            const res = await api.get(`/api/player/${id}`, {
                 params: {
                     viewerUserId: currentUser?.id || null
                 }
@@ -132,7 +136,7 @@ function PlayerProfile({ playerId, currentUser, onBack, openClub, setToast }) {
 
             <button
                 className="back-btn"
-                onClick={onBack}
+                onClick={() => navigate(-1)}
             >
                 ← Back
             </button>

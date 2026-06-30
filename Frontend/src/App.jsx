@@ -15,20 +15,19 @@ import TournamentDetails from "./pages/TournamentDetails";
 import ClubProfile from "./pages/ClubProfile";
 import PlayerProfile from "./pages/PlayerProfile";
 import Toast from "./components/toast";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("home");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [selectedTournament, setSelectedTournament] = useState(null);
-  const [selectedClub, setSelectedClub] = useState(null);
-  const [selectedPlayer, setSelectedPlayer] = useState(null);
   const [toast, setToast] = useState({
     message: "",
     type: ""
   });
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -56,31 +55,17 @@ function App() {
     }
   }, []);
 
-  async function refreshTournament(id) {
-    try {
-      const res = await api.get(`/api/tournament/${id}`);
-      setSelectedTournament(res.data.tournament);
-    } catch (error) {
-      console.log(error);
-    }
+  function openTournament(tournament) {
+    navigate(`/tournament/${tournament.id}`);
   }
 
   function openClub(clubId) {
-    setSelectedPlayer(null);
-    setSelectedTournament(null);
-
-    setSelectedClub(clubId);
-    setCurrentPage("clubs");
+    navigate(`/clubprofile/${clubId}`);
   }
 
   function openPlayer(playerId) {
-    setSelectedClub(null);
-    setSelectedTournament(null);
-
-    setSelectedPlayer(playerId);
-    setCurrentPage("community");
+    navigate(`/playerProfile/${playerId}`);
   }
-
   return (
     <div>
       <Header
@@ -90,6 +75,16 @@ function App() {
         onRegister={() => setShowRegister(true)}
         Rdisable={showLogin}
         Sdisable={showRegister}
+      />
+
+      <Navbar />
+
+      <Sidebar
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        openClub={openClub}
+        openPlayer={openPlayer}
+        setToast={setToast}
       />
 
       {showLogin && (
@@ -122,98 +117,74 @@ function App() {
         </div>
       )}
 
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Home
+              currentUser={currentUser}
+              openTournament={openTournament}
+            />
+          }
+        />
 
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-      />
-
-      <Sidebar
-        currentUser={currentUser}
-        setCurrentUser={setCurrentUser}
-        openClub={openClub}
-        openPlayer={openPlayer}
-        setToast={setToast}
-      />
-
-      {currentPage === "home" &&
-        (selectedTournament ? (
-          <>
-            {console.log("APP RENDER")}
-            {console.log(currentUser)}
+        <Route
+          path="/tournament/:id"
+          element={
             <TournamentDetails
-              tournament={selectedTournament}
-              onBack={() => setSelectedTournament(null)}
-              clubId={currentUser?.user_club_id}
+              currentUser={currentUser}
               role={currentUser?.role}
               setToast={setToast}
-              refreshTournament={refreshTournament}
-              currentUser={currentUser}
             />
-          </>
-        ) : (
-          <Home
-            currentUser={currentUser}
-            openTournament={setSelectedTournament}
-          />
-        ))
-      }
-      {currentPage === "clubs" &&
-        (selectedClub ? (
+          }
+        />
+
+        <Route path="/clubprofile/:id" element={
           <ClubProfile
-            clubId={selectedClub}
             currentUser={currentUser}
             setCurrentUser={setCurrentUser}
-            onBack={() => setSelectedClub(null)}
             openLogin={() => setShowLogin(true)}
             setToast={setToast}
-          />
-        ) : (
+          />} />
+
+        <Route path="/clubs" element={
           <Clubs
             currentUser={currentUser}
             openClub={openClub}
             setToast={setToast}
-          />
-        ))
-      }
-      {currentPage === "news" && <News />}
-      {currentPage === "community" &&
-        (
-          selectedClub ?
-            <ClubProfile
-              clubId={selectedClub}
-              currentUser={currentUser}
-              setCurrentUser={setCurrentUser}
-              onBack={() => setSelectedClub(null)}
-              openLogin={() => setShowLogin(true)}
-              setToast={setToast}
-            />
-            :
-            selectedPlayer ?
-              <PlayerProfile
-                playerId={selectedPlayer}
-                currentUser={currentUser}
-                onBack={() => setSelectedPlayer(null)}
-                openClub={openClub}
-                setToast={setToast}
-              />
-              :
-              <Community
-                currentUser={currentUser}
-                openLogin={() => setShowLogin(true)}
-                openClub={openClub}
-                openPlayer={openPlayer}
-              />
-        )}
+          />} />
 
-      {currentPage === "profile" &&
-        <Profile user={currentUser}
-          logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }}
-          ssr={() => setShowRegister(true)}
-          ssl={() => setShowLogin(true)}
-          setToast={setToast}
-          openClub={openClub} />
-      }
+
+        <Route path="/news" element={<News />} />
+
+        <Route path="/playerProfile/:id" element={
+          <PlayerProfile
+            currentUser={currentUser}
+            openClub={openClub}
+            setToast={setToast}
+          />
+        } />
+
+        <Route path="/community" element={
+          <Community
+            currentUser={currentUser}
+            openLogin={() => setShowLogin(true)}
+            openClub={openClub}
+            openPlayer={openPlayer}
+          />
+        } />
+
+
+        <Route path="/profile" element={
+          <Profile user={currentUser}
+            logout={() => { setIsLoggedIn(false); setCurrentUser(null); localStorage.removeItem("currentUser"); }}
+            ssr={() => setShowRegister(true)}
+            ssl={() => setShowLogin(true)}
+            setToast={setToast}
+            openClub={openClub} />
+        } />
+
+      </Routes>
 
       <Toast
         message={toast.message}

@@ -5,17 +5,21 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupsIcon from "@mui/icons-material/Groups";
 import Loading from "../components/Loading";
+import { useParams, useNavigate } from "react-router-dom";
 
-function ClubProfile({ clubId, currentUser, setCurrentUser, onBack, openLogin, setToast }) {
+function ClubProfile({ currentUser, setCurrentUser, openLogin, setToast }) {
     const [clubData, setClubData] = useState(null);
     const [activeTab, setActiveTab] = useState("players");
 
+    const { id } = useParams();
+    const navigate = useNavigate();
+
     useEffect(() => {
         fetchClub();
-    }, [clubId]);
+    }, [id]);
 
     async function fetchClub() {
-        const res = await api.get(`/api/club/${clubId}`, {
+        const res = await api.get(`/api/club/${id}`, {
             params: {
                 userId: currentUser?.id
             }
@@ -135,7 +139,7 @@ function ClubProfile({ clubId, currentUser, setCurrentUser, onBack, openLogin, s
 
             await fetchClub();
 
-            onBack();
+            navigate(-1);
 
         }
         catch (err) {
@@ -159,7 +163,7 @@ function ClubProfile({ clubId, currentUser, setCurrentUser, onBack, openLogin, s
 
             <button
                 className="back-btn"
-                onClick={onBack}
+                onClick={() => navigate(-1)}
             >
                 ← Back
             </button>

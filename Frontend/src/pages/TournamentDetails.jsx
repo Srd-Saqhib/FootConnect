@@ -7,29 +7,66 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupsIcon from "@mui/icons-material/Groups";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import UpdateResultModal from "../components/UpdateResultModal";
+import Loading from "../components/Loading";
+import { useParams, useNavigate } from "react-router-dom";
 
-function TournamentDetails({ tournament, onBack, clubId, role, setToast, refreshTournament, currentUser }) {
+function TournamentDetails({ role, setToast, currentUser }) {
     const [registeredClubs, setRegisteredClubs] = useState([]);
     const [layout, setLayout] = useState("clubs");
     const [fixtureMatches, setFixtureMatches] = useState([]);
     const [selectedMatch, setSelectedMatch] = useState(null);
+    const [tournament, setTournament] = useState(null);
 
-    const registrationClosed = new Date() > new Date(tournament.registration_deadline);
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-    const effectiveClubId = clubId ?? currentUser?.user_club_id;
+    const registrationClosed =
+        tournament
+            ? new Date() > new Date(tournament.registration_deadline)
+            : false;
+
+    const effectiveClubId = currentUser?.user_club_id;
 
     const isRegistered = registeredClubs.some(
         club => club.id === effectiveClubId
     );
 
     useEffect(() => {
-        getRegistered();
-        fetchFixtures();
-    }, []);
+        fetchTournament();
+    }, [id, currentUser]);
+
+    useEffect(() => {
+        if (tournament) {
+            getRegistered();
+            fetchFixtures();
+        }
+    }, [tournament]);
+
+    if (!tournament) {
+        return <Loading text="Fetching tournament details..." />;
+    }
+
+    function onBack() {
+        navigate(-1);
+    }
+
+    async function fetchTournament() {
+        try {
+            const res = await api.get(`/api/tournament/${id}`);
+            setTournament(res.data.tournament);
+        } catch (error) {
+            console.error("Error fetching tournament:", error);
+            setToast({
+                message: "Failed to fetch tournament details",
+                type: "error"
+            });
+            setTimeout(() => setToast({ message: "", type: "" }), 3000);
+
+        }
+    }
 
     async function registerClub() {
         try {
-            console.log("Register payload:", { clubId: effectiveClubId, tournamentId: tournament.id });
 
             if (!effectiveClubId) {
                 console.error("Missing clubId, aborting registration");
@@ -40,11 +77,10 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
             await api.post("/api/tournament/register", {
                 clubId: effectiveClubId,
-                tournamentId: tournament.id
+                tournamentId: tournament?.id
             });
 
-            await getRegistered();
-            await refreshTournament(tournament.id);
+            await fetchTournament();
 
             setToast({
                 message: "Tournament registration successful",
@@ -75,16 +111,17 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
         }
     }
 
+
     async function getRegistered() {
         try {
             const res = await api.get("/api/tournament/registeredClub", {
                 params: {
-                    tournamentId: tournament.id
+                    tournamentId: tournament?.id
                 }
             });
 
             setRegisteredClubs(res.data.clubs);
-        
+
         }
         catch (error) {
             console.log(error);
@@ -96,7 +133,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
             const res = await api.post(
                 "/api/tournament/generateFixtures",
                 {
-                    tournamentId: tournament.id
+                    tournamentId: tournament?.id
                 }
             );
             setToast({
@@ -124,7 +161,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
         try {
             const res = await api.get("/api/tournament/fetchFixtures", {
                 params: {
-                    tournamentId: tournament.id
+                    tournamentId: tournament?.id
                 }
             });
             setFixtureMatches(res.data.fixtures);
@@ -365,7 +402,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
 
                     )}
 
-                    {tournament.host_club_id === clubId && (
+                    {tournament.host_club_id === effectiveClubId && (
 
                         registeredClubs.length === tournament.max_teams ? (
                             fixtureMatches.length === 0 ? (
@@ -403,7 +440,7 @@ function TournamentDetails({ tournament, onBack, clubId, role, setToast, refresh
                             match={selectedMatch}
                             tournament={tournament}
                             fetchFixtures={fetchFixtures}
-                            refreshTournament={refreshTournament}
+                            fetchTournament={fetchTournament}
                             setToast={setToast}
                             onClose={() => setSelectedMatch(null)}
                         />
